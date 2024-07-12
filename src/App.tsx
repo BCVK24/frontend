@@ -1,42 +1,30 @@
-import bridge, { UserInfo } from "@vkontakte/vk-bridge";
-import { useActiveVkuiLocation } from "@vkontakte/vk-mini-apps-router";
-import { ScreenSpinner, SplitCol, SplitLayout, View } from "@vkontakte/vkui";
-import { ReactNode, useEffect, useState } from "react";
+import {
+  useActiveVkuiLocation,
+  useRouteNavigator,
+} from "@vkontakte/vk-mini-apps-router";
+import { SplitCol, SplitLayout, View, ModalRoot } from "@vkontakte/vkui";
 
 import { HomePanel, RecordingPanel } from "./panels";
+import { DND } from "./modals";
 
 export const App = () => {
-  const { panel: activePanel = "home" } = useActiveVkuiLocation();
-  const [fetchedUser, setUser] = useState<UserInfo | undefined>();
-  const [popout, setPopout] = useState<ReactNode | null>(
-    <ScreenSpinner size="large" />,
+  const routeNavigator = useRouteNavigator();
+  const { panel: activePanel = "home", modal: activeModal } =
+    useActiveVkuiLocation();
+  const modals = (
+    <ModalRoot
+      activeModal={activeModal}
+      onClose={() => routeNavigator.hideModal()}
+    >
+      <DND id="dnd" />
+    </ModalRoot>
   );
 
-  useEffect(() => {
-    async function fetchData() {
-      //const user = await bridge.send("VKWebAppGetUserInfo");
-      // TODO REMOVE
-      const user = {
-        id: 0,
-        first_name: "Gleb",
-        last_name: "Hleb",
-        sex: 0,
-        city: { id: 0, title: "Kemerovo" },
-        country: { id: 0, title: "Nope" },
-        photo_100: "",
-        photo_200: "",
-      };
-      setUser(user);
-      setPopout(null);
-    }
-    fetchData();
-  }, []);
-
   return (
-    <SplitLayout popout={popout}>
+    <SplitLayout modal={modals}>
       <SplitCol>
         <View activePanel={activePanel}>
-          <HomePanel id="home" fetchedUser={fetchedUser} />
+          <HomePanel id="home" />
           <RecordingPanel id="recording" />
         </View>
       </SplitCol>

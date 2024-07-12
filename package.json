@@ -12,14 +12,18 @@
     "deploy": "vite build && vk-miniapps-deploy"
   },
   "dependencies": {
+    "@vkid/sdk": "^2.0.0",
     "@vkontakte/icons": "^2.92.0",
     "@vkontakte/vk-bridge": "^2.13.0",
     "@vkontakte/vk-bridge-react": "^1.0.1",
     "@vkontakte/vk-mini-apps-router": "^1.4.2",
     "@vkontakte/vkui": "^6.0.0",
     "@wavesurfer/react": "^1.0.7",
+    "dotenv": "^16.4.5",
+    "js-cookie": "^3.0.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-drag-drop-files": "^2.3.10",
     "wavesurfer.js": "^7.8.1"
   },
   "devDependencies": {

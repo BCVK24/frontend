@@ -1,1 +1,0 @@
-const SERVER_URl = 'http://backend:8080'

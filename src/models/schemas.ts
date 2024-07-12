@@ -6,14 +6,16 @@ export enum TagDescription {
 export interface Result {
   source_id: number;
   id: number;
-  created_at: Date;
+  url: string;
+  created_at: string;
   duration: number;
 }
 
 export interface Recording {
   id: number;
   title: string;
-  created_at: Date;
+  url: string;
+  created_at: string;
   creator_id: number;
   duration: number;
 }
@@ -28,14 +30,4 @@ export interface Tag {
 
 export interface User {
   id: number;
-}
-
-export interface WaveForm {
-  version: number;
-  channels: number;
-  sample_rate: number;
-  samples_per_pixel: number;
-  bits: number;
-  length: number;
-  data: Array<number>;
 }

@@ -3,6 +3,7 @@ import { Recording } from "../models/schemas";
 import { RichCellProps, RichCell, ButtonGroup, Button } from "@vkontakte/vkui";
 import { RouteNavigator } from "@vkontakte/vk-mini-apps-router";
 import { RecordingService } from "../services/recording";
+import { MilToNorm } from "../utils/tagtosec";
 
 interface RecordingCellProps extends RichCellProps {
   recording: Recording;
@@ -16,13 +17,13 @@ export const RecordingCell: FC<RecordingCellProps> = ({
   return (
     <RichCell
       caption={recording.created_at.toLocaleString("ru-RU")}
-      after={10}
+      after={MilToNorm(recording.duration)}
       actions={
         <ButtonGroup mode="horizontal" gap="s" stretched>
           <Button
             mode="primary"
             size="s"
-            onClick={() => router.push(`${recording.id}`)}
+            onClick={() => router.push(`/recording/${recording.id}`)}
           >
             Открыть
           </Button>

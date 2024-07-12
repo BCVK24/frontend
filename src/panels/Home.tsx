@@ -1,27 +1,28 @@
-import { UserInfo } from "@vkontakte/vk-bridge";
 import { useRouteNavigator } from "@vkontakte/vk-mini-apps-router";
 import {
-  Div,
+  ButtonGroup,
   Flex,
   Group,
   NavIdProps,
   Panel,
   PanelHeader,
   ToolButton,
+  Header,
 } from "@vkontakte/vkui";
 import { FC, useEffect, useState } from "react";
 import { UserService } from "../services/user";
-import { Icon20MusicMic, Icon24MusicMic } from "@vkontakte/icons";
+import {
+  Icon20MusicMic,
+  Icon24MusicMic,
+  Icon24Upload,
+  Icon20UploadOutline,
+} from "@vkontakte/icons";
 import { RecordingCell } from "../components/RecordingCell";
 import { UserRel } from "../models/relschemas";
 
-export interface HomeProps extends NavIdProps {
-  fetchedUser?: UserInfo;
-}
+export interface HomeProps extends NavIdProps {}
 
-export const HomePanel: FC<HomeProps> = ({ id, fetchedUser }) => {
-  const { photo_200, city, first_name, last_name } = { ...fetchedUser };
-  // const userId = fetchedUser?.id;
+export const HomePanel: FC<HomeProps> = ({ id }) => {
   const routeNavigator = useRouteNavigator();
 
   const [user, setUser] = useState<UserRel | undefined>();
@@ -35,25 +36,36 @@ export const HomePanel: FC<HomeProps> = ({ id, fetchedUser }) => {
   }, []);
 
   return user === undefined ? (
-    <Panel id={id}>Something went wrong</Panel>
+    <Panel id={id}>Что-то пошло не так</Panel>
   ) : (
     <Panel id={id}>
-      <PanelHeader>Ваши записи</PanelHeader>
+      <PanelHeader>CleanCast</PanelHeader>
       <Group>
         <Flex align="center" justify="center">
-          <Div>
+          <ButtonGroup>
             <ToolButton
               IconCompact={Icon20MusicMic}
               IconRegular={Icon24MusicMic}
               direction="row"
             >
-              Record
+              Записать
             </ToolButton>
-          </Div>
+
+            <ToolButton
+              IconCompact={Icon20UploadOutline}
+              IconRegular={Icon24Upload}
+              direction="row"
+              onClick={() => {
+                routeNavigator.showModal("dnd");
+              }}
+            >
+              Загрузить
+            </ToolButton>
+          </ButtonGroup>
         </Flex>
       </Group>
 
-      <Group>
+      <Group header={<Header mode="secondary">Ваши записи</Header>}>
         {user.recordings.map((recording) => (
           <RecordingCell
             key={recording.id}

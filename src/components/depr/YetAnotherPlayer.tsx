@@ -1,9 +1,9 @@
 import { Icon48Pause, Icon48Play } from "@vkontakte/icons";
 import { ButtonGroup, Div, IconButton } from "@vkontakte/vkui";
-import WaveSurfer, { useWavesurfer } from "@wavesurfer/react";
-import { FC, useCallback, useMemo, useRef } from "react";
+import { useWavesurfer } from "@wavesurfer/react";
+import { FC, useCallback, useMemo } from "react";
 import Timeline from "wavesurfer.js/dist/plugins/timeline.esm.js";
-import { RecordingRel } from "../models/relschemas";
+import { RecordingRel } from "../../models/relschemas";
 import RegionsPlugin from "wavesurfer.js/dist/plugins/regions.js";
 import Hover from "wavesurfer.js/dist/plugins/hover.esm.js";
 
@@ -12,8 +12,6 @@ interface RecordingPlayerProps {
 }
 
 export const RecordingPlayer2: FC<RecordingPlayerProps> = ({ recording }) => {
-  const containerRef = useRef(null);
-
   const { wavesurfer, isPlaying, currentTime } = useWavesurfer({
     container: containerRef,
     height: 100,
@@ -23,7 +21,7 @@ export const RecordingPlayer2: FC<RecordingPlayerProps> = ({ recording }) => {
     waveColor: "blue",
     progressColor: "red",
     url: "/2min.wav",
-    // peaks: [wave.data],
+    //peaks: [recording.wave],
     duration: recording?.duration,
     plugins: useMemo(
       () => [Timeline.create(), RegionsPlugin.create(), Hover.create()],
@@ -42,11 +40,7 @@ export const RecordingPlayer2: FC<RecordingPlayerProps> = ({ recording }) => {
       <ButtonGroup align="center">
         <Div>
           <IconButton onClick={onPlayPause}>
-            {isPlaying ? (
-              <Icon48Pause color="#5181B8" />
-            ) : (
-              <Icon48Play color="#5181B8" />
-            )}
+            {isPlaying ? <Icon48Pause /> : <Icon48Play />}
           </IconButton>
         </Div>
       </ButtonGroup>

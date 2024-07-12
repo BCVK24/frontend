@@ -7,11 +7,11 @@ import {
 import { ButtonGroup, Div, Flex, IconButton } from "@vkontakte/vkui";
 import WavesurferPlayer from "@wavesurfer/react";
 import { FC, useEffect, useState } from "react";
-import { RecordingRel } from "../models/relschemas";
-import { RecordingService } from "../services/recording";
+import { RecordingRel } from "../../models/relschemas";
+import { RecordingService } from "../../services/recording";
 import TimelinePlugin from "wavesurfer.js/dist/plugins/timeline.js";
 import Hover from "wavesurfer.js/dist/plugins/hover.esm.js";
-import RegionsPlugin from "wavesurfer.js/dist/plugins/regions.esm.js";
+//import RegionsPlugin from "wavesurfer.js/dist/plugins/regions.esm.js";
 
 interface RecordingPlayerProps {
   recording: RecordingRel;

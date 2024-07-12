@@ -3,14 +3,17 @@ import {
   createPanel,
   createRoot,
   createView,
+  createModal,
   RoutesConfig,
 } from "@vkontakte/vk-mini-apps-router";
 
 export const routes = RoutesConfig.create([
   createRoot("default_root", [
     createView("default_view", [
-      createPanel("home", "/", []),
-      createPanel("recording", `/:recording_id`, [], ["recording_id"] as const),
+      createPanel("home", "/", [createModal("dnd", `/drop`, [])]),
+      createPanel("recording", `/recording/:recording_id`, [], [
+        "recording_id",
+      ] as const),
     ]),
   ]),
 ]);

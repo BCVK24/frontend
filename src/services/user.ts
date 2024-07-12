@@ -1,26 +1,22 @@
 import axios from "axios";
 import { UserRel } from "../models/relschemas";
+import { GetAuthConfig } from "./params";
+import { SERVER_URL } from "../env";
 
 export const UserService = {
-  async get_current(): Promise<UserRel> {
-    return {
-      id: 1,
-      recordings: [
-        {
-          id: 1,
-          title: "Example recording",
-          created_at: new Date("2024-07-05T09:16:53.098Z"),
-          creator_id: 1,
-          duration: 178,
-        },
-        {
-          id: 2,
-          title: "Example recording.1",
-          created_at: new Date("2024-07-05T09:16:53.099Z"),
-          creator_id: 1,
-          duration: 178,
-        },
-      ],
-    };
+  async get_current(): Promise<UserRel | undefined> {
+    console.log(`GET CURRENT USER`);
+    const cfg = GetAuthConfig();
+    let output = undefined;
+    await axios
+      .get(`${SERVER_URL}/user`, cfg)
+      .then((response) => {
+        output = response.data;
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    console.log(output);
+    return output;
   },
 };

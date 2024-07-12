@@ -1,43 +1,57 @@
 import axios from "axios";
-import { TagDescription } from "../models/schemas";
+import { GetAuthConfig } from "./params";
 import { RecordingRel } from "../models/relschemas";
-
-import { WaveForm } from "../models/schemas";
+import { Recording } from "../models/schemas";
+import { SERVER_URL } from "../env";
 
 export const RecordingService = {
-  async get_info(id: number): Promise<RecordingRel> {
-    console.log("LOAD RECORDING");
-    return {
-      id: 1,
-      title: "Example recording",
-      created_at: new Date("2024-07-05T09:19:40.814Z"),
-      creator_id: 1,
-      duration: 1,
-      creator: {
-        id: 1,
-      },
-      tags: [
-        {
-          id: 1,
-          recording_id: 1,
-          start: 0,
-          end: 10,
-          description: TagDescription.SILENT,
-        },
-      ],
-      results: [
-        {
-          source_id: 1,
-          id: 1,
-          created_at: new Date("2024-07-05T09:19:40.814Z"),
-          duration: 10,
-        },
-      ],
-    };
+  async get_info(recording_id: number): Promise<RecordingRel | undefined> {
+    console.log(`GET INFO for recording ${recording_id}`);
+    const cfg = GetAuthConfig();
+    let output = undefined;
+    await axios
+      .get(`${SERVER_URL}/recording/${recording_id}/`, cfg)
+      .then((response) => {
+        output = response.data;
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    console.log(output);
+    return output;
   },
-  async delete(id: number): Promise<void> {},
-  async get_wave(id: number): Promise<WaveForm> {
-    console.log("LOAD WAVE");
-    return {};
+  async delete(recording_id: number): Promise<void> {
+    console.log(`DELETE RECORDING ${recording_id}`);
+    const cfg = GetAuthConfig();
+    let output = undefined;
+    await axios
+      .delete(`${SERVER_URL}/recording/${recording_id}/`, cfg)
+      .then((response) => {
+        output = response.data;
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    return output;
+  },
+  async create(recording_data, name: string): Promise<Recording | undefined> {
+    console.log(`UPLOAD RECORDING`);
+
+    const cfg = GetAuthConfig("multipart/form-data");
+
+    const body = new FormData();
+    body.append("recording_file", recording_data);
+    body.append("recording", name);
+
+    let output = undefined;
+    await axios
+      .post(`${SERVER_URL}/recording/`, body, cfg)
+      .then((response) => {
+        output = response.data;
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    return output;
   },
 };
