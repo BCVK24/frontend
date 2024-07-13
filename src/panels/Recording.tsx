@@ -30,8 +30,9 @@ import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Hover from "wavesurfer.js/dist/plugins/hover.esm.js";
 import RegionsPlugin from "wavesurfer.js/dist/plugins/regions.js";
 import Timeline from "wavesurfer.js/dist/plugins/timeline.esm.js";
+import ZoomPlugin from "wavesurfer.js/dist/plugins/zoom.js";
 import { RecordingRel } from "../models/relschemas";
-import { Result } from "../models/schemas";
+import { Result, TagDescription } from "../models/schemas";
 import { RecordingService } from "../services/recording";
 import { TagCell } from "../components/TagCell";
 import { ResultService } from "../services/result";
@@ -54,7 +55,6 @@ export const RecordingPanel: FC<RecordingPanelProps> = ({ id }) => {
     async function fetchData() {
       const recording = await RecordingService.get_info(+recordingId);
       setRecording(recording);
-      console.log(`${SERVER_URL}/${recording?.url}`);
     }
     fetchData();
   }, [recordingId]);
@@ -68,12 +68,20 @@ export const RecordingPanel: FC<RecordingPanelProps> = ({ id }) => {
     waveColor: "blue",
     progressColor: "red",
     url: `${SERVER_URL}/${recording?.url}`,
-    peaks: recording?.soundwave
-      ? [JSON.parse(recording?.soundwave)]
-      : undefined,
+    // peaks: recording?.soundwave
+    //   ? [JSON.parse(recording?.soundwave)]
+    //   : undefined,
     duration: recording?.duration,
+    dragToSeek: true,
     plugins: useMemo(
-      () => [Timeline.create(), RegionsPlugin.create(), Hover.create()],
+      () => [
+        Timeline.create(),
+        Hover.create(),
+        ZoomPlugin.create({
+          scale: 0.5,
+          maxZoom: 100,
+        }),
+      ],
       [],
     ),
   });
@@ -84,16 +92,29 @@ export const RecordingPanel: FC<RecordingPanelProps> = ({ id }) => {
     wavesurfer?.on("decode", () => {
       for (const tag of recording?.tags || []) {
         wsRegions?.addRegion({
+          id: tag.id.toString(),
           start: tag.start / 1000,
           end: tag.end / 1000,
           content: tag.description,
-          color: "green",
-          drag: false,
+          color:
+            tag.description == TagDescription.CUSTOM
+              ? "rgba(0,255,255,0.5)"
+              : "rgba(255,0,0,0.5)",
+          drag: true,
           resize: true,
         });
       }
     });
-  });
+
+    wsRegions?.on("region-updated", (region) => {
+      console.log("Updated region", region);
+    });
+
+    wsRegions?.on("region-clicked", (region, e) => {
+      e.stopPropagation();
+      region.play();
+    });
+  }, [recording?.tags, wavesurfer]);
 
   const closeResults = () => {
     setPopout(undefined);
@@ -140,10 +161,10 @@ export const RecordingPanel: FC<RecordingPanelProps> = ({ id }) => {
       await TagService.create(currentTime, currentTime + 10000, recording.id),
     );
     setRecording(recording);
-  }, [recording?.id, currentTime]);
+  }, [recording, currentTime]);
 
   const createResult = useCallback(async () => {
-    await ResultService.create(recording.id);
+    await ResultService.create(recording?.id);
   }, [recording?.id]);
 
   return !recording ? (

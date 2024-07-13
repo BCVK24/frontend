@@ -7,7 +7,7 @@ export const TagService = {
     recording_id: number,
     description: TagDescription = TagDescription.CUSTOM,
   ): Promise<Tag> {
-    console.log(`CREATE TAG for ${recording_id}`);
+    //console.log(`CREATE TAG for ${recording_id}`);
   },
   async update(recording) {},
 };

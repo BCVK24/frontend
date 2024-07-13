@@ -6,7 +6,7 @@ import { SERVER_URL } from "../env";
 
 export const RecordingService = {
   async get_info(recording_id: number): Promise<RecordingRel | undefined> {
-    console.log(`GET INFO for recording ${recording_id}`);
+    // console.log(`GET INFO for recording ${recording_id}`);
     const cfg = GetAuthConfig();
     let output = undefined;
     await axios
@@ -17,11 +17,11 @@ export const RecordingService = {
       .catch((error) => {
         console.log(error);
       });
-    console.log(output);
+    //console.log(output);
     return output;
   },
   async delete(recording_id: number): Promise<void> {
-    console.log(`DELETE RECORDING ${recording_id}`);
+    //console.log(`DELETE RECORDING ${recording_id}`);
     const cfg = GetAuthConfig();
     let output = undefined;
     await axios
@@ -35,7 +35,7 @@ export const RecordingService = {
     return output;
   },
   async create(recording_data, name: string): Promise<Recording | undefined> {
-    console.log(`UPLOAD RECORDING`);
+    //console.log(`UPLOAD RECORDING`);
 
     const cfg = GetAuthConfig("multipart/form-data");
 

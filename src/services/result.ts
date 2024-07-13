@@ -5,7 +5,7 @@ import { SERVER_URL } from "../env";
 
 export const ResultService = {
   async create(recording_id: number): Promise<Recording | undefined> {
-    console.log(`CREATE RESULT for recording ${recording_id}`);
+    //console.log(`CREATE RESULT for recording ${recording_id}`);
     const cfg = GetAuthConfig();
     let output = undefined;
     await axios
@@ -19,6 +19,6 @@ export const ResultService = {
     return output;
   },
   async download(result_id: number): Promise<void> {
-    console.log(`DOWNLOAD RESULT ${result_id}`);
+    //console.log(`DOWNLOAD RESULT ${result_id}`);
   },
 };
