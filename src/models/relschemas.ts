@@ -14,3 +14,7 @@ export interface ResultRel extends Result {
 export interface UserRel extends User {
   recordings: Array<Recording>;
 }
+
+export interface TagRel extends Tag {
+  recording: Recording;
+}

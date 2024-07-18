@@ -1,7 +1,7 @@
 import Cookies from "js-cookie";
 
 export const GetAuthConfig = (contentType: string = "application/json") => {
-  // console.log(GetCookies());
+  console.log(GetCookies());
   return {
     headers: {
       Authorization: GetCookies(),

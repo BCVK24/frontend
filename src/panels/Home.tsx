@@ -7,50 +7,37 @@ import {
   Panel,
   PanelHeader,
   ToolButton,
-  Header,
 } from "@vkontakte/vkui";
-import { FC, useEffect, useState } from "react";
-import { UserService } from "../services/user";
-import {
-  Icon20MusicMic,
-  Icon24MusicMic,
-  Icon24Upload,
-  Icon20UploadOutline,
-} from "@vkontakte/icons";
-import { RecordingCell } from "../components/RecordingCell";
+import { FC } from "react";
+import { Icon24Upload, Icon20UploadOutline } from "@vkontakte/icons";
 import { UserRel } from "../models/relschemas";
+import { ErrorMessage } from "../components/ErrorMessage";
+import { RecordingsList } from "../components/RecordinsList";
 
-export interface HomeProps extends NavIdProps {}
+export interface HomeProps extends NavIdProps {
+  user: UserRel | undefined;
+  setUser: React.Dispatch<React.SetStateAction<UserRel | undefined>>;
+}
 
-export const HomePanel: FC<HomeProps> = ({ id }) => {
+/**
+ * @description Home panel with all user recordings
+ */
+export const HomePanel: FC<HomeProps> = ({ id, user, setUser }) => {
   const routeNavigator = useRouteNavigator();
 
-  const [user, setUser] = useState<UserRel | undefined>();
-
-  useEffect(() => {
-    async function fetchData() {
-      const user = await UserService.get_current();
-      setUser(user);
-    }
-    fetchData();
-  }, []);
-
   return user === undefined ? (
-    <Panel id={id}>Что-то пошло не так</Panel>
+    <Panel id={id}>
+      <ErrorMessage
+        header="Что-то пошло не так"
+        subheader="Возможно вы зашли в приложение не через платформу VK"
+      />
+    </Panel>
   ) : (
     <Panel id={id}>
       <PanelHeader>CleanCast</PanelHeader>
       <Group>
         <Flex align="center" justify="center">
           <ButtonGroup>
-            <ToolButton
-              IconCompact={Icon20MusicMic}
-              IconRegular={Icon24MusicMic}
-              direction="row"
-            >
-              Записать
-            </ToolButton>
-
             <ToolButton
               IconCompact={Icon20UploadOutline}
               IconRegular={Icon24Upload}
@@ -65,15 +52,7 @@ export const HomePanel: FC<HomeProps> = ({ id }) => {
         </Flex>
       </Group>
 
-      <Group header={<Header mode="secondary">Ваши записи</Header>}>
-        {user.recordings.map((recording) => (
-          <RecordingCell
-            key={recording.id}
-            recording={recording}
-            router={routeNavigator}
-          />
-        ))}
-      </Group>
+      <RecordingsList user={user} setUser={setUser} />
     </Panel>
   );
 };

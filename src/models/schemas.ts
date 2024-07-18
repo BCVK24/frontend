@@ -1,14 +1,10 @@
-export enum TagDescription {
-  SILENT = "SILENT",
-  CUSTOM = "CUSTOM",
-}
-
 export interface Result {
   source_id: number;
   id: number;
   url: string;
   created_at: string;
   duration: number;
+  processing: boolean;
 }
 
 export interface Recording {
@@ -18,6 +14,7 @@ export interface Recording {
   created_at: string;
   creator_id: number;
   duration: number;
+  processing: boolean;
 }
 
 export interface Tag {
@@ -25,7 +22,8 @@ export interface Tag {
   recording_id: number;
   start: number;
   end: number;
-  description: TagDescription;
+  description: string;
+  tag_type: string;
 }
 
 export interface User {
