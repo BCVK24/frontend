@@ -21,8 +21,8 @@ export const TagsList: FC<TagsListProps> = ({
   wsRegionsRef,
 }) => {
   //console.log("IN TAGSLIST", wsRegionsRef.current?.getRegions());
-  return recording.tags.length ? (
-    <Group header={<Header mode="secondary">Проблемные участки</Header>}>
+  return  (
+    <Group header={<Header mode="secondary">{recording.tags.length ? "Проблемные участки" : "Проблемных участков нет!"}</Header>}>
       {recording.tags.map((tag: Tag, index: number) =>
         wsRegionsRef.current?.getRegions()[index] ? (
           <TagCell
@@ -37,7 +37,5 @@ export const TagsList: FC<TagsListProps> = ({
         ) : undefined,
       )}
     </Group>
-  ) : (
-    <Div>В этой записи нет проблемных участков</Div>
   );
 };

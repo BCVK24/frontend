@@ -6,13 +6,13 @@ import {
   NavIdProps,
   Panel,
   PanelHeader,
+  ScreenSpinner,
   ToolButton,
 } from "@vkontakte/vkui";
-import { FC } from "react";
+import { FC, useState } from "react";
 import { Icon24Upload, Icon20UploadOutline } from "@vkontakte/icons";
 import { UserRel } from "../models/relschemas";
-import { ErrorMessage } from "../components/ErrorMessage";
-import { RecordingsList } from "../components/RecordinsList";
+import { ErrorMessage, RecordingsList } from "../components";
 
 export interface HomeProps extends NavIdProps {
   user: UserRel | undefined;
@@ -27,10 +27,10 @@ export const HomePanel: FC<HomeProps> = ({ id, user, setUser }) => {
 
   return user === undefined ? (
     <Panel id={id}>
-      <ErrorMessage
+      {/*<ErrorMessage
         header="Что-то пошло не так"
         subheader="Возможно вы зашли в приложение не через платформу VK"
-      />
+      />*/}
     </Panel>
   ) : (
     <Panel id={id}>

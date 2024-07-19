@@ -8,7 +8,7 @@ export const TagService = {
     start: number,
     end: number,
     recording_id: number,
-    description: string = "CUSTOM",
+    description: string = "Добавлено пользователем",
   ): Promise<Tag | undefined> {
     const cfg = GetAuthConfig();
     let output = undefined;
@@ -31,16 +31,17 @@ export const TagService = {
       });
     return output;
   },
-  async update(id: number, start: number, end: number): Promise<void> {
+  async update(tag: Tag): Promise<void> {
     const cfg = GetAuthConfig();
     let output = undefined;
     await axios
       .put(
         `${SERVER_URL}/tag/`,
         {
-          id: id,
-          start: start,
-          end: end,
+          id: tag.id,
+          start: tag.start,
+          end: tag.end,
+          description: tag.description
         },
         cfg,
       )
@@ -52,9 +53,9 @@ export const TagService = {
       });
     return output;
   },
-  async delete(id: number): Promise<void> {
+  async delete(tag_id: number): Promise<void> {
     const cfg = GetAuthConfig();
-    await axios.delete(`${SERVER_URL}/tag/${id}`, cfg).catch((error) => {
+    await axios.delete(`${SERVER_URL}/tag/${tag_id}`, cfg).catch((error) => {
       console.log(error);
     });
   },

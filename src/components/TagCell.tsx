@@ -1,12 +1,12 @@
 import { FC } from "react";
 import { IconButton, SimpleCell } from "@vkontakte/vkui";
-import { Icon24Delete, Icon24Mute, Icon24User } from "@vkontakte/icons";
+import { Icon24Delete, Icon24RobotOutline, Icon24User } from "@vkontakte/icons";
 import { Tag } from "../models/schemas";
 import { TagToNormalized } from "../utils/secondsConvert";
 import { TagService } from "../services/tag";
 import { RecordingRel } from "../models/relschemas";
 import WaveSurfer from "wavesurfer.js";
-import RegionsPlugin, { Region } from "wavesurfer.js/dist/plugins/regions.js";
+import { Region } from "wavesurfer.js/dist/plugins/regions.js";
 
 interface TagCellProps {
   keyId: number;
@@ -33,7 +33,7 @@ export const TagCell: FC<TagCellProps> = ({
   region,
 }) => {
   const navigateTo = (where: number) => {
-    wavesurfer && wavesurfer.setTime(where / 1000);
+    wavesurfer && wavesurfer.setTime(where);
   };
 
   const deleteTag = async (key: number) => {
@@ -48,9 +48,9 @@ export const TagCell: FC<TagCellProps> = ({
   };
 
   let icon;
-  switch (tag.description) {
-    case "SILENT":
-      icon = <Icon24Mute />;
+  switch (tag.tag_type) {
+    case "MODELTAG":
+      icon = <Icon24RobotOutline />;
       break;
     default:
       icon = <Icon24User />;

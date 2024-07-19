@@ -5,18 +5,27 @@ import {
   ModalPage,
   ModalPageHeader,
   NavIdProps,
-  Slider,
+  FormLayoutGroup,
+  Button,
+  ButtonGroup,
+  Div
 } from "@vkontakte/vkui";
 import { FC } from "react";
 import { RecordingRel } from "../models/relschemas";
 import { Tag } from "../models/schemas";
-import { ErrorMessage } from "../components/ErrorMessage";
+import { ErrorMessage } from "../components";
+import { Normalize } from "../utils";
+import { TagType2Text } from "../constants";
+import { TagService } from "../services";
+import { Region } from "wavesurfer.js/dist/plugins/regions.js";
 
 interface AboutTagProps extends NavIdProps {
   recording: RecordingRel | undefined;
   setRecording: React.Dispatch<React.SetStateAction<RecordingRel | undefined>>;
   currentTag: Tag | undefined;
   setCurrentTag: React.Dispatch<React.SetStateAction<Tag | undefined>>;
+  currentRegion: Region | undefined;
+  setCurrentRegion: React.Dispatch<React.SetStateAction<Region | undefined>>;
 }
 
 /**
@@ -25,9 +34,10 @@ interface AboutTagProps extends NavIdProps {
 export const AboutTag: FC<AboutTagProps> = ({
   id,
   recording,
-  setRecording,
+  currentRegion,
   currentTag,
   setCurrentTag,
+  setRecording
 }) => {
   const router = useRouteNavigator();
 
@@ -42,27 +52,65 @@ export const AboutTag: FC<AboutTagProps> = ({
     );
   }
 
+  const deleteTag = async () => {
+    await TagService.delete(currentTag.id)
+    currentRegion?.remove()
+    router.hideModal()
+  }
+
+  const saveTag = async () => {
+    await TagService.update(currentTag)
+    currentRegion?.setOptions({content: currentTag.description})
+    const tags = recording.tags
+
+    if (currentRegion)
+      tags[+currentRegion.id].description = String(currentRegion?.content?.textContent) || ""
+
+    router.hideModal()
+  }
+
+  const updateDescription = (e) => {
+    setCurrentTag({...currentTag, description: e.target.value})
+  }
+
   return (
     <ModalPage
       id={id}
       onClose={() => router.hideModal()}
       header={<ModalPageHeader>Об участке</ModalPageHeader>}
     >
+      <FormItem top="Тип участка" htmlFor="start">
+        {TagType2Text(currentTag.tag_type)}
+      </FormItem>
+
       <FormItem top="Описание">
-        <Input value={currentTag.description} />
+        <Input 
+          value={currentTag.description} 
+          onChange={updateDescription} 
+        />
       </FormItem>
 
-      <FormItem top="Имя" htmlFor="start">
-        {currentTag.start}
-      </FormItem>
+      <FormLayoutGroup mode="horizontal">
+        <FormItem top="Начало" htmlFor="start">
+          {Normalize(currentTag.start)}
+        </FormItem>
 
-      <FormItem top="Имя" htmlFor="end">
-        {currentTag.end}
-      </FormItem>
+        <FormItem top="Конец" htmlFor="end">
+          {Normalize(currentTag.end)}
+        </FormItem>
+      </FormLayoutGroup>
 
-      {currentTag.tag_type}
-      {currentTag.start}
-      {currentTag.end}
+      <Div>
+
+        <ButtonGroup mode="horizontal" gap="m" stretched>
+          <Button onClick={saveTag} size="l" appearance="positive" stretched>
+            Сохранить
+          </Button>
+          <Button onClick={deleteTag} size="l" appearance="negative" stretched>
+            Удалить
+          </Button>
+        </ButtonGroup>
+      </Div>
     </ModalPage>
   );
 };

@@ -10,7 +10,6 @@ export interface Result {
 export interface Recording {
   id: number;
   title: string;
-  url: string;
   created_at: string;
   creator_id: number;
   duration: number;
@@ -23,7 +22,7 @@ export interface Tag {
   start: number;
   end: number;
   description: string;
-  tag_type: string;
+  tag_type: "MODELTAG" | "USERTAG" | "SOURCETAG";
 }
 
 export interface User {

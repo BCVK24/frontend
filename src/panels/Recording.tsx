@@ -6,28 +6,27 @@ import {
   Panel,
   PanelHeader,
   PanelHeaderBack,
+  ScreenSpinner
 } from "@vkontakte/vkui";
-import { FC, useEffect, useRef, useState } from "react";
-import { RecordingRel, UserRel } from "../models/relschemas";
-import { RecordingService } from "../services";
-import { ErrorMessage } from "../components/ErrorMessage";
-import { useCustomWave } from "../components/CustomWave";
-import { PlayerControls } from "../components/PlayerControls";
+import { FC, useEffect, useRef } from "react";
+import { RecordingService, TagService } from "../services";
+import { ErrorMessage, useCustomWave, PlayerControls, TagsList } from "../components";
 import { Icon16CheckCircle } from "@vkontakte/icons";
-import { TagsList } from "../components/TagsList";
 import RegionsPlugin, { Region } from "wavesurfer.js/dist/plugins/regions.js";
 import { Tag } from "../models/schemas";
-import { TagService } from "../services/tag";
+import { RecordingRel, UserRel } from "../models/relschemas";
+import { TagType2Color } from "../colors";
 
 interface RecordingPanelProps extends NavIdProps {
   setPopout: React.Dispatch<
-    React.SetStateAction<React.JSX.Element | undefined>
+    React.SetStateAction<React.JSX.Element | null | undefined>
   >;
   recording: RecordingRel | undefined;
   setRecording: React.Dispatch<React.SetStateAction<RecordingRel | undefined>>;
   user: UserRel | undefined;
   setUser: React.Dispatch<React.SetStateAction<UserRel | undefined>>;
   setCurrentTag: React.Dispatch<React.SetStateAction<Tag | undefined>>;
+  setCurrentRegion: React.Dispatch<React.SetStateAction<Region | undefined>>;
 }
 
 /**
@@ -39,19 +38,22 @@ export const RecordingPanel: FC<RecordingPanelProps> = ({
   recording,
   setRecording,
   setCurrentTag,
+  setCurrentRegion
 }) => {
   const routeNavigator = useRouteNavigator();
   const recordingId = useParams<"recording_id">()?.recording_id;
-  const [recordingName, setRecordingName] = useState<string | undefined>();
   const wavesurferRef = useRef(null);
+  const clearPopout = () => setPopout(null)
 
   useEffect(() => {
+    clearPopout()
     async function fetchData() {
       const recording = recordingId
         ? await RecordingService.get_info(+recordingId)
         : undefined;
       setRecording(recording);
-      recording && setRecordingName(recording.title);
+      recording && setPopout(<ScreenSpinner state="loading" />)
+      setTimeout(clearPopout, 10000);
     }
     fetchData();
   }, [recordingId]);
@@ -59,27 +61,32 @@ export const RecordingPanel: FC<RecordingPanelProps> = ({
   const { wavesurfer } = useCustomWave(wavesurferRef, recording);
   const wsRegions = wavesurfer?.registerPlugin(RegionsPlugin.create());
   const wsRegionsRef = useRef<RegionsPlugin | undefined>(wsRegions);
+  const rename = async (e) => {
+    await RecordingService.update(recording)
+  }
 
   useEffect(() => {
     wavesurfer?.on("decode", () => {
       for (const [id, tag] of (
         recording?.tags.sort((a, b) => a.start - b.start) || []
       ).entries()) {
+        if (tag.tag_type != "SOURCETAG")
         wsRegions?.addRegion({
           id: id.toString(),
           start: tag.start,
           end: tag.end,
           content: tag.description,
-          color:
-            tag.description == "CUSTOM"
-              ? "rgba(0,255,255,0.5)"
-              : "rgba(255,0,0,0.5)",
+          color: TagType2Color(tag.tag_type),
           drag: true,
           resize: true,
         });
       }
       wsRegionsRef.current = wsRegions;
     });
+    wavesurfer?.on('redrawcomplete', () => {
+      setPopout(<ScreenSpinner state="done">Успешно</ScreenSpinner>);
+      setTimeout(clearPopout, 1000);
+    })
   }, [wavesurfer]);
 
   useEffect(() => {
@@ -95,14 +102,18 @@ export const RecordingPanel: FC<RecordingPanelProps> = ({
         setRecording({ ...recording, tags: new_tags });
         await (recording?.tags[+region.id].id &&
           TagService.update(
-            recording?.tags[+region.id].id,
-            region.start,
-            region.end,
+            {
+              ...recording?.tags[+region.id],
+              start: region.start,
+              end: region.end,
+            },
           ));
       }
     });
     wsRegions?.on("region-clicked", (region: Region, e) => {
+      e.preventDefault()
       recording && setCurrentTag(recording.tags[+region.id]);
+      setCurrentRegion(region)
       routeNavigator.showModal("abouttag");
     });
   }, [wsRegions]);
@@ -120,16 +131,13 @@ export const RecordingPanel: FC<RecordingPanelProps> = ({
         before={<PanelHeaderBack onClick={() => routeNavigator.push("/")} />}
       >
         <Input
-          value={recordingName}
-          onChange={(e) => setRecordingName(e.target.value)}
+          value={recording.title}
+          onChange={(e) => setRecording({...recording, title: e.target.value})}
           after={
             <IconButton
-              onClick={() => {
-                setRecording({ ...recording, title: recordingName || "" });
-              }}
-              color={recording.title == recordingName ? undefined : "blue"}
+              onClick={rename}
             >
-              <Icon16CheckCircle />
+              <Icon16CheckCircle fill="var(--vkui--color_icon_accent)" />
             </IconButton>
           }
         />

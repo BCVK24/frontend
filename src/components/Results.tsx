@@ -5,7 +5,7 @@ import {
   AdaptiveIconRenderer,
 } from "@vkontakte/vkui";
 import { Result } from "../models/schemas";
-import { ResultService } from "../services";
+import { SERVER_URL } from "../env";
 
 /**
  * @description Opens popout with all results
@@ -13,29 +13,31 @@ import { ResultService } from "../services";
 export const openResults = (
   results: Array<Result>,
   setPopout: (
-    value: React.SetStateAction<React.JSX.Element | undefined>,
+    value: React.SetStateAction<React.JSX.Element | null | undefined>,
   ) => void,
   resultsTargetRef: React.MutableRefObject<null>,
 ) => {
   setPopout(
     <ActionSheet
-      onClose={() => setPopout(undefined)}
+      onClose={() => setPopout(null)}
       toggleRef={resultsTargetRef}
       placement="top-end"
     >
       {results.map((res) => (
-        <ActionSheetItem
-          before={
-            <AdaptiveIconRenderer
-              IconCompact={Icon20DownloadOutline}
-              IconRegular={Icon28DownloadOutline}
-            />
-          }
-          key={res.id}
-          onClick={() => ResultService.download(res.id)}
-        >
-          {new Date(res.created_at).toLocaleString("ru-RU")}
-        </ActionSheetItem>
+        <a style={{textDecoration: 'none'}} href={`${SERVER_URL}/${res.url}`}>
+          <ActionSheetItem
+            before={
+              <AdaptiveIconRenderer
+                IconCompact={Icon20DownloadOutline}
+                IconRegular={Icon28DownloadOutline}
+              />
+            }
+            key={res.id}
+            onClick={() => console.log(`${SERVER_URL}/${res.url}`)}
+          >
+            {new Date(res.created_at).toLocaleString("ru-RU")}
+          </ActionSheetItem>
+        </a>
       ))}
     </ActionSheet>,
   );

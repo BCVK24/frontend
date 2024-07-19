@@ -35,6 +35,10 @@ export const RecordingService = {
     recording_data: File,
     name: string,
   ): Promise<Recording | undefined> {
+    if (!recording_data.name.endsWith('.wav')) {
+      return undefined
+    }
+
     const cfg = GetAuthConfig("multipart/form-data");
 
     const body = new FormData();

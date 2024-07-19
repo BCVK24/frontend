@@ -4,14 +4,14 @@ import TimelinePlugin from "wavesurfer.js/dist/plugins/timeline.js";
 import HoverPlugin from "wavesurfer.js/dist/plugins/hover.js";
 import ZoomPlugin from "wavesurfer.js/dist/plugins/zoom.js";
 import { SERVER_URL } from "../env";
-import { Recording } from "../models/schemas";
+import { RecordingRel } from "../models/relschemas";
 
 /**
  * @description Custom hook that creates audio wave player
  */
 export const useCustomWave = (
   wavesurferRef: MutableRefObject<null>,
-  recording: Recording | undefined,
+  recording: RecordingRel | undefined,
 ) =>
   useWavesurfer({
     container: wavesurferRef,
@@ -19,8 +19,8 @@ export const useCustomWave = (
     barWidth: 2,
     barGap: 1,
     barRadius: 2,
-    waveColor: "blue",
-    progressColor: "red",
+    waveColor: "#001C3D",
+    progressColor: "#E64646",
     url: recording && `${SERVER_URL}/${recording?.url}`,
     // peaks: recording?.soundwave
     //   ? [JSON.parse(recording?.soundwave)]
