@@ -14,25 +14,27 @@ import {
   IconButton,
   GroupProps,
   NativeSelect,
+  ActionSheet,
+  ActionSheetItem,
 } from "@vkontakte/vkui";
-import { openResults } from "./Results";
 import WaveSurfer from "wavesurfer.js";
-import { TagService } from "../services/tag";
-import { RecordingRel } from "../models/relschemas";
-import { ResultService } from "../services";
 import RegionsPlugin from "wavesurfer.js/dist/plugins/regions.js";
+import { RecordingRel } from "../models/relschemas";
+import { ResultService, TagService, RecordingService } from "../services";
 import { POLLING_INTERVAL } from "../env";
-import { NotifyBar } from "./SnackBar";
-import { TagType2Color } from "../colors";
+import { NotifyBar, openResults } from ".";
+import { iconAccent, TagType2Color } from "../colors";
 
 interface PlayerControlsProps extends GroupProps {
   wavesurfer: WaveSurfer | null;
-  recording: RecordingRel;
-  setRecording: React.Dispatch<React.SetStateAction<RecordingRel | undefined>>;
+  wsRegionsRef: React.MutableRefObject<RegionsPlugin | undefined | null>;
+  currentRecording: RecordingRel;
+  setCurrentRecording: React.Dispatch<
+    React.SetStateAction<RecordingRel | undefined>
+  >;
   setPopout: React.Dispatch<
     React.SetStateAction<React.JSX.Element | null | undefined>
   >;
-  wsRegionsRef: React.MutableRefObject<RegionsPlugin | undefined | null>;
 }
 
 /**
@@ -40,42 +42,33 @@ interface PlayerControlsProps extends GroupProps {
  */
 export const PlayerControls: FC<PlayerControlsProps> = ({
   wavesurfer,
-  recording,
-  setRecording,
-  setPopout,
   wsRegionsRef,
+  currentRecording,
+  setCurrentRecording,
+  setPopout,
 }) => {
-  const [pollingResultId, setPollingResultId] = useState<undefined | number>();
-  const timerIdRef = useRef<number | undefined>(undefined);
-  const resultsTargetRef = useRef(null);
+  // Variables
+  const [isPollingResults, setIsPollingResults] = useState<boolean>(false);
   const [snackbar, setSnackbar] = useState<null | React.JSX.Element>(null);
+  const timerIdRef = useRef<number | undefined>(undefined);
+  const resultsRef = useRef(null);
+  const editMenuRef = useRef(null);
 
-  const onPlayPause = () => {
-    wavesurfer && wavesurfer.playPause();
-  };
-
-  const createResult = async () => {
-    if (!recording) return;
-    const result = await ResultService.create(recording?.id);
-    result && setPollingResultId(result.id);
-  };
-
+  // Polling for results
   useEffect(() => {
     const pollingCallback = async () => {
-      if (!pollingResultId) return;
+      if (!isPollingResults) return;
 
-      const result = await ResultService.get(pollingResultId);
+      const recording = await RecordingService.get_info(currentRecording.id);
 
-      if (!result) return;
+      if (!recording) return;
 
-      if (!result.processing) {
-        setPollingResultId(undefined);
+      setCurrentRecording(recording);
+
+      if (!recording.results.some((res) => res.processing)) {
+        setIsPollingResults(false);
 
         setSnackbar(<NotifyBar setSnackBar={setSnackbar} text="Результат успешно обработан" />)
-
-        const results = recording.results;
-        results.push(result);
-        setRecording({ ...recording, results: results });
       }
     };
 
@@ -87,79 +80,151 @@ export const PlayerControls: FC<PlayerControlsProps> = ({
       clearInterval(timerIdRef.current);
     };
 
-    if (pollingResultId) {
+    if (isPollingResults) {
       startPolling();
     } else {
       stopPolling();
     }
-  }, [pollingResultId]);
+  }, [isPollingResults]);
+  
+  // Buttons behavior
+  const onPlayPause = () => {
+    wavesurfer && wavesurfer.playPause();
+  };
+
+  const createResult = async () => {
+    if (!currentRecording) return;
+
+    const result = await ResultService.create(currentRecording?.id);
+
+    result && setIsPollingResults(true);
+  };
 
   const createTag = async () => {
+    // Call API
     const tag =
-      wavesurfer && recording?.id
+      wavesurfer && currentRecording?.id
         ? await TagService.create(
             wavesurfer.getCurrentTime(),
             wavesurfer.getCurrentTime() + 10,
-            recording?.id,
-            `Отрезок ${recording.tags.length + 1}`
+            currentRecording?.id,
+            `Отрезок ${currentRecording.tags.length + 1}`
           )
         : undefined;
 
-    const new_tags = recording?.tags;
-    tag == undefined || new_tags?.push(tag);
-    setRecording({ ...recording, tags: new_tags });
-    //console.log("NEW RECORDING", recording);
+    // Update localy
+    const newTags = currentRecording?.tags;
+    tag == undefined || newTags?.push(tag);
+    setCurrentRecording({ ...currentRecording, tags: newTags });
 
+    // Add to regions
     tag &&
       wsRegionsRef.current?.addRegion({
-        id: (recording?.tags.length - 1 || 0).toString(),
+        id: (currentRecording?.tags.length - 1 || 0).toString(),
         start: tag.start,
         end: tag.end,
         content: tag.description,
         color: TagType2Color(tag.tag_type)
       });
-    //console.log("IN PLAYER", wsRegionsRef.current?.getRegions());
   };
+
+  const loadModelTags = async () => {
+    const fetchedRecording = await RecordingService.get_model_tags(currentRecording.id)
+
+    wsRegionsRef.current?.clearRegions()
+
+    const sortedTags = fetchedRecording?.tags.sort((a, b) => a.start - b.start)
+    for (const [id, tag] of (sortedTags || []).entries()) {
+      if (tag.tag_type != "SOURCETAG") {
+        wsRegionsRef.current?.addRegion({
+          id: id.toString(),
+          start: tag.start,
+          end: tag.end,
+          content: tag.description,
+          color: TagType2Color(tag.tag_type),
+          drag: true,
+          resize: true,
+        });
+      }
+    }
+  }
+
+  const deleteModelTags = async () => {
+    const fetchedRecording = await RecordingService.delete_model_tags(currentRecording.id)
+
+    wsRegionsRef.current?.clearRegions()
+
+    const sortedTags = fetchedRecording?.tags.sort((a, b) => a.start - b.start)
+    for (const [id, tag] of (sortedTags || []).entries()) {
+      if (tag.tag_type != "SOURCETAG") {
+        wsRegionsRef.current?.addRegion({
+          id: id.toString(),
+          start: tag.start,
+          end: tag.end,
+          content: tag.description,
+          color: TagType2Color(tag.tag_type),
+          drag: true,
+          resize: true,
+        });
+      }
+    }
+  }
+
+  const openTagEditMenu = () => {
+    setPopout(
+      <ActionSheet onClose={() => setPopout(null)} toggleRef={editMenuRef}>
+        <ActionSheetItem onClick={createTag}>Создать тег</ActionSheetItem>
+        <ActionSheetItem onClick={loadModelTags}>Добавить теги модели</ActionSheetItem>
+        <ActionSheetItem onClick={deleteModelTags} mode="destructive">Удалить теги модели</ActionSheetItem>
+      </ActionSheet>
+      )
+  }
 
   return (
     <Group>
       <Flex align="center" justify="center">
         <Div>
           <ButtonGroup>
-            <IconButton onClick={onPlayPause}>
-              {wavesurfer && wavesurfer.isPlaying() ? (
-                <Icon28Pause color="var(--vkui--color_icon_accent)" />
-              ) : (
-                <Icon28Play color="var(--vkui--color_icon_accent)" />
-              )}
+            <IconButton 
+              onClick={onPlayPause}
+            >
+              {
+                wavesurfer?.isPlaying() ? 
+                  <Icon28Pause color={iconAccent} /> :
+                  <Icon28Play color={iconAccent} />
+              }
             </IconButton>
 
-            <IconButton onClick={createTag}>
-              <Icon28AddCircleOutline color="var(--vkui--color_icon_accent)" />
+            <IconButton 
+              onClick={openTagEditMenu} 
+              getRootRef={editMenuRef}
+            >
+              <Icon28AddCircleOutline color={iconAccent} />
             </IconButton>
 
             <IconButton
               onClick={createResult}
-              disabled={wsRegionsRef.current?.getRegions().length == 0}
+              disabled={!wsRegionsRef.current?.getRegions().length}
             >
-              <Icon28EditorCutOutline color="var(--vkui--color_icon_accent)" />
+              <Icon28EditorCutOutline color={iconAccent} />
             </IconButton>
 
             <IconButton
               onClick={() => {
-                openResults(recording.results, setPopout, resultsTargetRef);
+                openResults(currentRecording.results, setPopout, resultsRef);
               }}
-              getRootRef={resultsTargetRef}
-              disabled={recording.results.length == 0}
+              getRootRef={resultsRef}
+              disabled={!currentRecording.results.length}
             >
-              <Icon28DownloadOutline color="var(--vkui--color_icon_accent)" />
+              <Icon28DownloadOutline color={iconAccent} />
             </IconButton>
 
             <NativeSelect 
-            defaultValue={1} 
-            onChange={(e) => {
-                wavesurfer?.setPlaybackRate(+e.target.value, true)
-            }}>
+              defaultValue={1} 
+              onChange={(e) => {
+                  wavesurfer?.setPlaybackRate(+e.target.value, true)
+              }}
+            >
               <option value={0.5}>0.5x</option>
               <option value={1}>1x</option>
               <option value={1.5}>1.5x</option>

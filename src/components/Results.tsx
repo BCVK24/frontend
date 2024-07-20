@@ -12,33 +12,29 @@ import { SERVER_URL } from "../env";
  */
 export const openResults = (
   results: Array<Result>,
-  setPopout: (
-    value: React.SetStateAction<React.JSX.Element | null | undefined>,
-  ) => void,
+  setPopout: React.Dispatch<React.SetStateAction<React.JSX.Element | null | undefined>>,
   resultsTargetRef: React.MutableRefObject<null>,
-) => {
-  setPopout(
-    <ActionSheet
-      onClose={() => setPopout(null)}
-      toggleRef={resultsTargetRef}
-      placement="top-end"
-    >
-      {results.map((res) => (
-        <a style={{textDecoration: 'none'}} href={`${SERVER_URL}/${res.url}`}>
-          <ActionSheetItem
-            before={
-              <AdaptiveIconRenderer
-                IconCompact={Icon20DownloadOutline}
-                IconRegular={Icon28DownloadOutline}
-              />
-            }
-            key={res.id}
-            onClick={() => console.log(`${SERVER_URL}/${res.url}`)}
-          >
-            {new Date(res.created_at).toLocaleString("ru-RU")}
-          </ActionSheetItem>
-        </a>
-      ))}
-    </ActionSheet>,
-  );
-};
+) => setPopout(
+  <ActionSheet
+    onClose={() => setPopout(null)}
+    toggleRef={resultsTargetRef}
+    placement="top-end"
+  >
+    {results.map((res) => (
+      <a style={{textDecoration: 'none'}} href={`${SERVER_URL}/${res.url}`}>
+        <ActionSheetItem
+          before={
+            <AdaptiveIconRenderer
+              IconCompact={Icon20DownloadOutline}
+              IconRegular={Icon28DownloadOutline}
+            />
+          }
+          key={res.id}
+        >
+          {new Date(res.created_at).toLocaleString("ru-RU")}
+        </ActionSheetItem>
+      </a>
+    ))}
+  </ActionSheet>,
+);
+

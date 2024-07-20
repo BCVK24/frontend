@@ -1,5 +1,4 @@
 import { FC } from "react";
-import { Recording } from "../models/schemas";
 import {
   RichCellProps,
   RichCell,
@@ -10,23 +9,16 @@ import {
 import { RouteNavigator } from "@vkontakte/vk-mini-apps-router";
 import { RecordingService } from "../services";
 import { Normalize } from "../utils/secondsConvert";
+import { Recording } from "../models/schemas";
 import { UserRel } from "../models/relschemas";
 
 interface RecordingCellProps extends RichCellProps {
   recording: Recording;
   router: RouteNavigator;
-  user: UserRel;
-  setUser: React.Dispatch<React.SetStateAction<UserRel | undefined>>;
+  currentUser: UserRel;
+  setCurrentUser: React.Dispatch<React.SetStateAction<UserRel | undefined>>;
   index: number;
 }
-
-const UnavaliableRecordingCell = ({}) => {
-  return (
-    <RichCell caption={<Skeleton width={90} />} after={<Skeleton width={30} />}>
-      {<Skeleton width={200} />}
-    </RichCell>
-  );
-};
 
 /**
  * @description For single recording, used on main screen
@@ -34,12 +26,14 @@ const UnavaliableRecordingCell = ({}) => {
 export const RecordingCell: FC<RecordingCellProps> = ({
   recording,
   router,
-  user,
-  setUser,
+  currentUser,
+  setCurrentUser,
   index,
 }) => {
   return recording.processing ? (
-    <UnavaliableRecordingCell />
+    <RichCell caption={<Skeleton width={90} />} after={<Skeleton width={30} />}>
+      {<Skeleton width={200} />}
+    </RichCell>
   ) : (
     <RichCell
       caption={new Date(recording.created_at).toLocaleString("ru-RU")}
@@ -58,9 +52,9 @@ export const RecordingCell: FC<RecordingCellProps> = ({
             size="s"
             onClick={async () => {
               await RecordingService.delete(recording.id);
-              const recordings = user.recordings;
+              const recordings = currentUser.recordings;
               recordings.splice(index, 1);
-              setUser({ ...user, recordings: recordings });
+              setCurrentUser({ ...currentUser, recordings: recordings });
             }}
           >
             Удалить

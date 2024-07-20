@@ -1,32 +1,31 @@
-import { Icon28ErrorCircleOutline, Icon28, Icon28CheckCircleOutline } from "@vkontakte/icons"
+import { Icon28ErrorCircleOutline, Icon28CheckCircleOutline } from "@vkontakte/icons"
 import { Snackbar } from "@vkontakte/vkui"
 import { FC } from "react"
+import { iconNegative, iconPositive } from "../colors"
 
-interface SnakcBarProps {
-    setSnackBar: React.Dispatch<React.SetStateAction<null | React.JSX.Element>>
-    text: string
+interface SnackBarProps {
+  setSnackBar: React.Dispatch<React.SetStateAction<null | React.JSX.Element>>
+  text: string
 }
 
-export const SnackBar: FC<SnakcBarProps> = ({setSnackBar, text}) => {
-    return (
-
+export const ErrorBar: FC<SnackBarProps> = ({setSnackBar, text}) => {
+  return (
     <Snackbar
-        onClose={() => setSnackBar(null)}
-        before={<Icon28ErrorCircleOutline fill="var(--vkui--color_icon_negative)" />}
+      onClose={() => setSnackBar(null)}
+      before={<Icon28ErrorCircleOutline fill={iconNegative} />}
     >
-        {text}
+      {text}
     </Snackbar>
-    )
+  )
 }
 
-export const NotifyBar: FC<SnakcBarProps> = ({setSnackBar, text}) => {
-    return (
-
+export const NotifyBar: FC<SnackBarProps> = ({setSnackBar, text}) => {
+  return (
     <Snackbar
-        onClose={() => setSnackBar(null)}
-        before={<Icon28CheckCircleOutline fill="var(--vkui--color_icon_positive)" />}
+      onClose={() => setSnackBar(null)}
+      before={<Icon28CheckCircleOutline fill={iconPositive} />}
     >
-        {text}
+      {text}
     </Snackbar>
-    )
+  )
 }

@@ -6,26 +6,25 @@ import {
   NavIdProps,
   Panel,
   PanelHeader,
-  ScreenSpinner,
   ToolButton,
 } from "@vkontakte/vkui";
-import { FC, useState } from "react";
+import { FC } from "react";
 import { Icon24Upload, Icon20UploadOutline } from "@vkontakte/icons";
 import { UserRel } from "../models/relschemas";
-import { ErrorMessage, RecordingsList } from "../components";
+import { RecordingsList } from "../components";
 
 export interface HomeProps extends NavIdProps {
-  user: UserRel | undefined;
-  setUser: React.Dispatch<React.SetStateAction<UserRel | undefined>>;
+  currentUser: UserRel | undefined;
+  setCurrentUser: React.Dispatch<React.SetStateAction<UserRel | undefined>>;
 }
 
 /**
  * @description Home panel with all user recordings
  */
-export const HomePanel: FC<HomeProps> = ({ id, user, setUser }) => {
+export const HomePanel: FC<HomeProps> = ({ id, currentUser, setCurrentUser }) => {
   const routeNavigator = useRouteNavigator();
 
-  return user === undefined ? (
+  return !currentUser ? (
     <Panel id={id}>
       {/*<ErrorMessage
         header="Что-то пошло не так"
@@ -52,7 +51,7 @@ export const HomePanel: FC<HomeProps> = ({ id, user, setUser }) => {
         </Flex>
       </Group>
 
-      <RecordingsList user={user} setUser={setUser} />
+      <RecordingsList currentUser={currentUser} setCurrentUser={setCurrentUser} />
     </Panel>
   );
 };

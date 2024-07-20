@@ -1,6 +1,6 @@
-import { ModalCardBase, ModalCardBaseProps, Div, Flex } from "@vkontakte/vkui";
-import { Icon56ErrorOutline } from "@vkontakte/icons";
 import { FC } from "react";
+import { Icon56ErrorOutline } from "@vkontakte/icons";
+import { ModalCardBase, ModalCardBaseProps, Div, Flex } from "@vkontakte/vkui";
 
 interface ErrorMessageProps extends ModalCardBaseProps {}
 

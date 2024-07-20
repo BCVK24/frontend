@@ -5,7 +5,7 @@ import { SERVER_URL } from "../env";
 
 export const UserService = {
   async get_current(): Promise<UserRel | undefined> {
-    console.log(`GET CURRENT USER`);
+    //console.log(`GET CURRENT USER`);
     const cfg = GetAuthConfig();
     let output = undefined;
     await axios
@@ -16,7 +16,7 @@ export const UserService = {
       .catch((error) => {
         console.log(error);
       });
-    console.log(output);
+    //console.log(output);
     return output;
   },
 };

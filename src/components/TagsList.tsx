@@ -1,38 +1,40 @@
 import { FC } from "react";
+import { Group, Header } from "@vkontakte/vkui";
+import WaveSurfer from "wavesurfer.js";
+import RegionPlugin from "wavesurfer.js/dist/plugins/regions.js";
 import { Tag } from "../models/schemas";
 import { RecordingRel } from "../models/relschemas";
-import { Group, Div, Header } from "@vkontakte/vkui";
-import { TagCell } from "./TagCell";
-import WaveSurfer from "wavesurfer.js";
-
-import RegionPlugin, { Region } from "wavesurfer.js/dist/plugins/regions.js";
+import { TagCell } from ".";
 
 interface TagsListProps {
-  recording: RecordingRel;
   wavesurfer: WaveSurfer | null;
-  setRecording: React.Dispatch<React.SetStateAction<RecordingRel | undefined>>;
   wsRegionsRef: React.MutableRefObject<RegionPlugin | undefined>;
+  currentRecording: RecordingRel;
+  setCurrentRecording: React.Dispatch<React.SetStateAction<RecordingRel | undefined>>;
 }
 
 export const TagsList: FC<TagsListProps> = ({
-  recording,
   wavesurfer,
-  setRecording,
   wsRegionsRef,
+  currentRecording,
+  setCurrentRecording,
 }) => {
-  //console.log("IN TAGSLIST", wsRegionsRef.current?.getRegions());
   return  (
-    <Group header={<Header mode="secondary">{recording.tags.length ? "Проблемные участки" : "Проблемных участков нет!"}</Header>}>
-      {recording.tags.map((tag: Tag, index: number) =>
+    <Group header={
+      <Header mode="secondary">
+        {currentRecording.tags.length ? "Проблемные участки" : "Проблемных участков нет!"}
+      </Header>
+    }>
+      {currentRecording.tags.map((tag: Tag, index: number) =>
         wsRegionsRef.current?.getRegions()[index] ? (
           <TagCell
+            key={index}
+            keyId={index}
             tag={tag}
             region={wsRegionsRef.current?.getRegions()[index]}
             wavesurfer={wavesurfer}
-            key={index}
-            keyId={index}
-            recording={recording}
-            setRecording={setRecording}
+            currentRecording={currentRecording}
+            setCurrentRecording={setCurrentRecording}
           />
         ) : undefined,
       )}

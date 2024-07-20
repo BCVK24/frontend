@@ -1,26 +1,26 @@
-import { Group, Header } from "@vkontakte/vkui";
 import { FC } from "react";
-import { RecordingCell } from "./RecordingCell";
-import { UserRel } from "../models/relschemas";
+import { Group, Header } from "@vkontakte/vkui";
 import { useRouteNavigator } from "@vkontakte/vk-mini-apps-router";
+import { RecordingCell } from ".";
+import { UserRel } from "../models/relschemas";
 
 interface RecordingsListProps {
-  user: UserRel;
-  setUser: React.Dispatch<React.SetStateAction<UserRel | undefined>>;
+  currentUser: UserRel;
+  setCurrentUser: React.Dispatch<React.SetStateAction<UserRel | undefined>>;
 }
 
-export const RecordingsList: FC<RecordingsListProps> = ({ user, setUser }) => {
+export const RecordingsList: FC<RecordingsListProps> = ({ currentUser, setCurrentUser }) => {
   const routeNavigator = useRouteNavigator();
 
   return (
     <Group header={<Header mode="secondary">Ваши записи</Header>}>
-      {user.recordings.map((recording, index) => (
+      {currentUser.recordings.map((recording, index) => (
         <RecordingCell
           key={recording.id}
           recording={recording}
           router={routeNavigator}
-          setUser={setUser}
-          user={user}
+          setCurrentUser={setCurrentUser}
+          currentUser={currentUser}
           index={index}
         />
       ))}

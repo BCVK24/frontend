@@ -1,34 +1,32 @@
-import { useRouteNavigator } from "@vkontakte/vk-mini-apps-router";
+import React, { FC, DragEvent, useState, ChangeEvent } from "react";
 import { DropZone, ModalPage, NavIdProps, Placeholder, File, Div } from "@vkontakte/vkui";
-import { FC, DragEvent, useEffect, useRef, useState, ChangeEvent } from "react";
-import { POLLING_INTERVAL } from "../env";
+import { Icon56MusicOutline } from "@vkontakte/icons";
+import { useRouteNavigator } from "@vkontakte/vk-mini-apps-router";
 import { RecordingService } from "../services";
 import { RecordingRel, UserRel } from "../models/relschemas";
-import { UserService } from "../services";
-import { Icon56MusicOutline } from "@vkontakte/icons";
-import { SnackBar } from "../components";
-import React from "react";
+import { ErrorBar } from "../components";
+import { iconAccent } from "../colors";
 
 interface DNDProps extends NavIdProps {
-  setRecording: React.Dispatch<React.SetStateAction<RecordingRel | undefined>>;
-  user: UserRel | undefined;
-  setUser: React.Dispatch<React.SetStateAction<UserRel | undefined>>;
+  setCurrentRecording: React.Dispatch<React.SetStateAction<RecordingRel | undefined>>;
+  currentUser: UserRel | undefined;
+  setCurrentUser: React.Dispatch<React.SetStateAction<UserRel | undefined>>;
+  setFetchRecordings: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 /**
  * @description Modal for DragNDroping files
  */
-export const DND: FC<DNDProps> = ({ id, user, setUser }) => {
+export const DND: FC<DNDProps> = ({ id, currentUser, setFetchRecordings }) => {
   const router = useRouteNavigator();
-  const timerIdRef = useRef<number | undefined>();
-  const [fetchingId, setFetchingId] = useState<number | undefined>(undefined);
   const [snackbar, setSnackbar] = useState<null | React.JSX.Element>(null);
 
+  // Template
   const Item = ({ active }) => (
     <Placeholder.Container>
       <Placeholder.Icon>
         <Icon56MusicOutline
-          fill={active ? "var(--vkui--color_icon_accent)" : undefined}
+          fill={active ? iconAccent : undefined}
         />
       </Placeholder.Icon>
       <Placeholder.Header>Перетащите сюда файл</Placeholder.Header>
@@ -43,6 +41,7 @@ export const DND: FC<DNDProps> = ({ id, user, setUser }) => {
     </Placeholder.Container>
   );
 
+  // Handle D&D event 
   const handleChange = async (event: DragEvent<HTMLElement>) => {
     event.preventDefault();
 
@@ -53,18 +52,19 @@ export const DND: FC<DNDProps> = ({ id, user, setUser }) => {
         `Запись от ${new Date().toLocaleDateString("ru-RU")}`,
       ));
 
-    const recordings = user?.recordings;
+    const recordings = currentUser?.recordings;
     recordings && recording && recordings.push(recording);
 
     if (!recording || recording == undefined) {
-      setSnackbar(<SnackBar setSnackBar={setSnackbar} text="Убедитесь, что вы загрузили корректный wav файл" />)
+      setSnackbar(<ErrorBar setSnackBar={setSnackbar} text="Убедитесь, что вы загрузили корректный wav файл" />)
     }
 
     router.hideModal();
 
-    recording && setFetchingId(recording.id);
+    recording && setFetchRecordings(true);
   };
 
+  // Handle button event
   const handleButtonChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const recording =
       event?.target?.files?.length &&
@@ -73,45 +73,16 @@ export const DND: FC<DNDProps> = ({ id, user, setUser }) => {
         `Запись от ${new Date().toLocaleDateString("ru-RU")}`,
       ));
 
-    const recordings = user?.recordings;
+    const recordings = currentUser?.recordings;
     recordings && recording && recordings.push(recording);
 
     if (recording)
       router.hideModal();
     else
-      setSnackbar(<SnackBar setSnackBar={setSnackbar} text="Убедитесь, что вы загрузили корректный wav файл" />)
+      setSnackbar(<ErrorBar setSnackBar={setSnackbar} text="Убедитесь, что вы загрузили корректный wav файл" />)
 
-
-    recording && setFetchingId(recording.id);
+    recording && setFetchRecordings(true);
   };
-
-  useEffect(() => {
-    const pollingCallback = async () => {
-      const recording = fetchingId
-        ? await RecordingService.get_info(fetchingId)
-        : undefined;
-
-      if (!recording?.processing) {
-        setUser(await UserService.get_current());
-        setFetchingId(undefined);
-        stopPolling();
-      }
-    };
-
-    const startPolling = () => {
-      timerIdRef.current = setInterval(pollingCallback, POLLING_INTERVAL);
-    };
-
-    const stopPolling = () => {
-      clearInterval(timerIdRef.current);
-    };
-
-    if (fetchingId) {
-      startPolling();
-    } else {
-      stopPolling();
-    }
-  }, [fetchingId]);
 
   return (
     <ModalPage id={id}>

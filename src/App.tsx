@@ -4,7 +4,6 @@ import {
   useRouteNavigator,
 } from "@vkontakte/vk-mini-apps-router";
 import { SplitCol, SplitLayout, View, ModalRoot, ScreenSpinner } from "@vkontakte/vkui";
-
 import { HomePanel, RecordingPanel } from "./panels";
 import { DND, AboutTag } from "./modals";
 import { RecordingRel, UserRel } from "./models/relschemas";
@@ -18,33 +17,32 @@ export const App = () => {
   const { panel: activePanel = "home", modal: activeModal } =
     useActiveVkuiLocation();
   const [popout, setPopout] = useState<React.JSX.Element | null>();
-  const [recording, setRecording] = useState<RecordingRel | undefined>();
+  const [currentRecording, setCurrentRecording] = useState<RecordingRel | undefined>();
   const [currentTag, setCurrentTag] = useState<Tag | undefined>();
   const [currentRegion, setCurrentRegion] = useState<Region | undefined>();
-  const [user, setUser] = useState<UserRel | undefined>();
+  const [currentUser, setCurrentUser] = useState<UserRel | undefined>();
   const [fetchRecordings, setFetchRecordings] = useState<boolean>(false);
   const timerIdRef = useRef<number | undefined>(undefined);
   const clearPopout = () => setPopout(null);
 
+  const onUserLoaded = (fetchedUser: UserRel | undefined) => {
+    console.log(currentUser)
+    if (!currentUser && fetchedUser) {
+    }
+  }
 
+  // Pull user
   useEffect(() => {
     const pollingCallback = async () => {
-      const user = fetchRecordings
+      if (!fetchRecordings) return;
+
+      const fetchedUser = fetchRecordings
         ? await UserService.get_current()
         : undefined;
-      console.log("YEAHYADH")
 
-      if (user) {
-        setUser(user);
-        setPopout(<ScreenSpinner state="done">Успешно</ScreenSpinner>);
-        setTimeout(clearPopout, 1000);
-      } else {
-        setPopout(<ScreenSpinner state="error">Произошла ошибка</ScreenSpinner>);
-        setTimeout(clearPopout, 1000); 
-        stopPolling()  
-      }
+      setCurrentUser(fetchedUser)
 
-      if (!user?.recordings.some((rec) => rec.processing)) {
+      if (!fetchedUser?.recordings.some((rec) => rec.processing)) {
         setFetchRecordings(false);
         stopPolling();
       }
@@ -65,28 +63,44 @@ export const App = () => {
     }
   }, [fetchRecordings]);
 
+  // Initial fetch
   useEffect(() => {
-    clearPopout()
-    console.log("NOOO")
-    !user && setPopout(<ScreenSpinner state="loading" />);
-    !user && setFetchRecordings(true);
-    setTimeout(() => {clearPopout(); setFetchRecordings(false)}, 10000);
+    setPopout(<ScreenSpinner state="loading" />);
+
+    const fetchingCallback = async () => {
+      const fetchedUser = await UserService.get_current()
+
+      if (fetchedUser?.recordings.some((rec) => rec.processing)) {
+        setFetchRecordings(true);
+      }
+
+      setCurrentUser(fetchedUser)
+      setPopout(<ScreenSpinner state="done" />)
+      setTimeout(clearPopout, 1000)
+    };
+
+    fetchingCallback()
   }, [])
 
+  // Modals
   const modals = (
     <ModalRoot
       activeModal={activeModal}
       onClose={() => routeNavigator.hideModal()}
     >
-      <DND id="dnd" setRecording={setRecording} user={user} setUser={setUser} />
+      <DND 
+        id="dnd"
+        setCurrentRecording={setCurrentRecording}
+        currentUser={currentUser} 
+        setCurrentUser={setCurrentUser} 
+        setFetchRecordings={setFetchRecordings} 
+      />
       <AboutTag
         id="abouttag"
-        recording={recording}
-        setRecording={setRecording}
+        currentRecording={currentRecording}
         currentTag={currentTag}
-        setCurrentTag={setCurrentTag}
         currentRegion={currentRegion}
-        setCurrentRegion={setCurrentRegion}
+        setCurrentTag={setCurrentTag}
       />
     </ModalRoot>
   );
@@ -95,15 +109,15 @@ export const App = () => {
     <SplitLayout modal={modals} popout={popout} aria-live="polite" aria-busy={!!popout}>
       <SplitCol>
         <View activePanel={activePanel}>
-          <HomePanel id="home" user={user} setUser={setUser}/>
+          <HomePanel id="home" currentUser={currentUser} setCurrentUser={setCurrentUser}/>
           <RecordingPanel
             id="recording"
             setPopout={setPopout}
-            recording={recording}
-            setRecording={setRecording}
+            currentRecording={currentRecording}
+            setCurrentRecording={setCurrentRecording}
             setCurrentTag={setCurrentTag}
-            user={user}
-            setUser={setUser}
+            currentUser={currentUser}
+            setCurrentUser={setCurrentUser}
             setCurrentRegion={setCurrentRegion}
           />
         </View>

@@ -12,30 +12,30 @@ import { RecordingRel } from "../models/relschemas";
 export const useCustomWave = (
   wavesurferRef: MutableRefObject<null>,
   recording: RecordingRel | undefined,
-) =>
-  useWavesurfer({
-    container: wavesurferRef,
-    height: 100,
-    barWidth: 2,
-    barGap: 1,
-    barRadius: 2,
-    waveColor: "#001C3D",
-    progressColor: "#E64646",
-    url: recording && `${SERVER_URL}/${recording?.url}`,
-    // peaks: recording?.soundwave
-    //   ? [JSON.parse(recording?.soundwave)]
-    //   : undefined,
-    duration: recording?.duration,
-    dragToSeek: true,
-    plugins: useMemo(
-      () => [
-        TimelinePlugin.create(),
-        HoverPlugin.create(),
-        ZoomPlugin.create({
-          scale: 0.5,
-          maxZoom: 100,
-        }),
-      ],
-      [],
-    ),
-  });
+) => useWavesurfer({
+  container: wavesurferRef,
+  height: 100,
+  barWidth: 2,
+  barGap: 1,
+  barRadius: 2,
+  waveColor: "#001C3D",
+  progressColor: "#E64646",
+  url: recording && `${SERVER_URL}/${recording?.url}`,
+  // FIXME soundwave causes to infinite re-render
+  // peaks: recording?.soundwave
+  //   ? [JSON.parse(recording?.soundwave)]
+  //   : undefined,
+  duration: recording?.duration,
+  dragToSeek: true,
+  plugins: useMemo(
+    () => [
+      TimelinePlugin.create(),
+      HoverPlugin.create(),
+      ZoomPlugin.create({
+        scale: 0.5,
+        maxZoom: 100,
+      }),
+    ],
+    [],
+  ),
+});

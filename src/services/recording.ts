@@ -77,4 +77,43 @@ export const RecordingService = {
         }));
     return output;
   },
+  async get_model_tags(
+    recording_id: number
+  ): Promise<RecordingRel | undefined> {
+    const cfg = GetAuthConfig();
+
+    let output = undefined;
+    await axios
+      .post(
+        `${SERVER_URL}/recording/model_tags/${recording_id}`,
+        { },
+        cfg,
+      )
+      .then((response) => {
+        output = response.data;
+      })
+      .catch((error) => {
+        console.log(error);
+      })
+    return output;
+  },
+  async delete_model_tags(
+    recording_id: number
+  ): Promise<RecordingRel | undefined> {
+    const cfg = GetAuthConfig();
+
+    let output = undefined;
+    await axios
+      .delete(
+        `${SERVER_URL}/recording/model_tags/${recording_id}`,
+        cfg,
+      )
+      .then((response) => {
+        output = response.data;
+      })
+      .catch((error) => {
+        console.log(error);
+      })
+    return output;
+  }
 };
