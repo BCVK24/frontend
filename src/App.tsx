@@ -4,12 +4,12 @@ import {
   useRouteNavigator,
 } from "@vkontakte/vk-mini-apps-router";
 import { SplitCol, SplitLayout, View, ModalRoot, ScreenSpinner } from "@vkontakte/vkui";
+import { Region } from "wavesurfer.js/dist/plugins/regions.js";
 import { HomePanel, RecordingPanel } from "./panels";
 import { DND, AboutTag } from "./modals";
 import { RecordingRel, UserRel } from "./models/relschemas";
 import { Tag } from "./models/schemas";
 import { UserService } from "./services";
-import { Region } from "wavesurfer.js/dist/plugins/regions.js";
 import { POLLING_INTERVAL } from "./env";
 
 export const App = () => {
@@ -24,12 +24,6 @@ export const App = () => {
   const [fetchRecordings, setFetchRecordings] = useState<boolean>(false);
   const timerIdRef = useRef<number | undefined>(undefined);
   const clearPopout = () => setPopout(null);
-
-  const onUserLoaded = (fetchedUser: UserRel | undefined) => {
-    console.log(currentUser)
-    if (!currentUser && fetchedUser) {
-    }
-  }
 
   // Pull user
   useEffect(() => {
