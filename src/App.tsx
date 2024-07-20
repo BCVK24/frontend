@@ -68,8 +68,12 @@ export const App = () => {
         setFetchRecordings(true);
       }
 
-      setCurrentUser(fetchedUser)
-      setPopout(<ScreenSpinner state="done" />)
+      if (fetchedUser) {
+        setCurrentUser(fetchedUser)
+        setPopout(<ScreenSpinner state="done" />)
+      } else {
+        setPopout(<ScreenSpinner state="error" />)
+      }
       setTimeout(clearPopout, 1000)
     };
 
