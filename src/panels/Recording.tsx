@@ -35,9 +35,7 @@ interface RecordingPanelProps extends NavIdProps {
 export const RecordingPanel: FC<RecordingPanelProps> = ({
   id,
   currentRecording,
-  currentUser,
   setCurrentRecording,
-  setCurrentUser,
   setCurrentTag,
   setCurrentRegion,
   setPopout,

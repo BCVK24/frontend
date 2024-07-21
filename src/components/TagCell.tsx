@@ -44,15 +44,9 @@ export const TagCell: FC<TagCellProps> = ({
   };
 
   // Choose icon
-  let icon;
-  switch (tag.tag_type) {
-    case "MODELTAG":
-      icon = <Icon24RobotOutline />;
-      break;
-    default:
-      icon = <Icon24User />;
-      break;
-  }
+  const icon = tag.tag_type == "MODELTAG" ?
+    <Icon24RobotOutline /> :
+    <Icon24User />;
 
   return (
     <SimpleCell

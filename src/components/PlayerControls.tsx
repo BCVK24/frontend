@@ -108,7 +108,7 @@ export const PlayerControls: FC<PlayerControlsProps> = ({
             wavesurfer.getCurrentTime(),
             wavesurfer.getCurrentTime() + 10,
             currentRecording?.id,
-            `Отрезок ${currentRecording.tags.length + 1}`
+            `Отрезок ${(wsRegionsRef.current?.getRegions().length || 0) + 1}`
           )
         : undefined;
 
@@ -131,43 +131,13 @@ export const PlayerControls: FC<PlayerControlsProps> = ({
   const loadModelTags = async () => {
     const fetchedRecording = await RecordingService.get_model_tags(currentRecording.id)
 
-    wsRegionsRef.current?.clearRegions()
-
-    const sortedTags = fetchedRecording?.tags.sort((a, b) => a.start - b.start)
-    for (const [id, tag] of (sortedTags || []).entries()) {
-      if (tag.tag_type != "SOURCETAG") {
-        wsRegionsRef.current?.addRegion({
-          id: id.toString(),
-          start: tag.start,
-          end: tag.end,
-          content: tag.description,
-          color: TagType2Color(tag.tag_type),
-          drag: true,
-          resize: true,
-        });
-      }
-    }
+    setCurrentRecording(fetchedRecording)
   }
 
   const deleteModelTags = async () => {
     const fetchedRecording = await RecordingService.delete_model_tags(currentRecording.id)
 
-    wsRegionsRef.current?.clearRegions()
-
-    const sortedTags = fetchedRecording?.tags.sort((a, b) => a.start - b.start)
-    for (const [id, tag] of (sortedTags || []).entries()) {
-      if (tag.tag_type != "SOURCETAG") {
-        wsRegionsRef.current?.addRegion({
-          id: id.toString(),
-          start: tag.start,
-          end: tag.end,
-          content: tag.description,
-          color: TagType2Color(tag.tag_type),
-          drag: true,
-          resize: true,
-        });
-      }
-    }
+    setCurrentRecording(fetchedRecording)
   }
 
   const openTagEditMenu = () => {
