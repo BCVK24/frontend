@@ -22,10 +22,10 @@ export const TagsList: FC<TagsListProps> = ({
   return  (
     <Group header={
       <Header mode="secondary">
-        {currentRecording.tags.length ? "Проблемные участки" : "Проблемных участков нет!"}
+        {currentRecording.display_tags.length ? "Проблемные участки" : "Проблемных участков нет!"}
       </Header>
     }>
-      {currentRecording.tags.map((tag: Tag, index: number) =>
+      {currentRecording.display_tags.map((tag: Tag, index: number) =>
         wsRegionsRef.current?.getRegions()[index] ? (
           <TagCell
             key={index}

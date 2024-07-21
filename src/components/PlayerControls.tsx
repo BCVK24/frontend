@@ -113,14 +113,14 @@ export const PlayerControls: FC<PlayerControlsProps> = ({
         : undefined;
 
     // Update localy
-    const newTags = currentRecording?.tags;
+    const newTags = currentRecording?.display_tags;
     tag == undefined || newTags?.push(tag);
-    setCurrentRecording({ ...currentRecording, tags: newTags });
+    setCurrentRecording({ ...currentRecording, display_tags: newTags });
 
     // Add to regions
     tag &&
       wsRegionsRef.current?.addRegion({
-        id: (currentRecording?.tags.length - 1 || 0).toString(),
+        id: (currentRecording?.display_tags.length - 1 || 0).toString(),
         start: tag.start,
         end: tag.end,
         content: tag.description,
@@ -131,11 +131,35 @@ export const PlayerControls: FC<PlayerControlsProps> = ({
   const loadModelTags = async () => {
     const fetchedRecording = await RecordingService.get_model_tags(currentRecording.id)
 
+    for (const region of wsRegionsRef.current?.getRegions() || []) {
+      if (currentRecording.display_tags[+region.id].tag_type == 'MODELTAG') {
+        region.remove()
+      }
+    }
+
+    for (const [id, tag] of (fetchedRecording?.display_tags || []).entries()) {
+      if (tag.tag_type == 'MODELTAG') {
+        wsRegionsRef.current?.addRegion({
+          id: id.toString(),
+          start: tag.start,
+          end: tag.end,
+          content: tag.description,
+          color: TagType2Color(tag.tag_type)
+        });
+      }
+    }
+
     setCurrentRecording(fetchedRecording)
   }
 
   const deleteModelTags = async () => {
     const fetchedRecording = await RecordingService.delete_model_tags(currentRecording.id)
+
+    for (const region of wsRegionsRef.current?.getRegions() || []) {
+      if (currentRecording.display_tags[+region.id].tag_type == 'MODELTAG') {
+        region.remove()
+      }
+    }
 
     setCurrentRecording(fetchedRecording)
   }

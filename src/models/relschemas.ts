@@ -2,7 +2,7 @@ import { Recording, User, Tag, Result } from "./schemas";
 
 export interface RecordingRel extends Recording {
   creator: User;
-  tags: Tag[];
+  display_tags: Tag[];
   results: Result[];
   url: string;
   //soundwave: string;

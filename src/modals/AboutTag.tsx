@@ -61,7 +61,7 @@ export const AboutTag: FC<AboutTagProps> = ({
   const saveTag = async () => {
     await TagService.update(currentTag)
     currentRegion?.setOptions({content: currentTag.description})
-    const tags = currentRecording.tags
+    const tags = currentRecording.display_tags
 
     if (currentRegion)
       tags[+currentRegion.id].description = String(currentRegion?.content?.textContent) || ""

@@ -70,11 +70,11 @@ export const App = () => {
 
       if (fetchedUser) {
         setCurrentUser(fetchedUser)
-        setPopout(<ScreenSpinner state="done" />)
+        activePanel == "home" && setPopout(<ScreenSpinner state="done" />)
       } else {
-        setPopout(<ScreenSpinner state="error" />)
+        activePanel == "home" && setPopout(<ScreenSpinner state="error" />)
       }
-      setTimeout(clearPopout, 1000)
+      activePanel == "home" && setTimeout(clearPopout, 1000)
     };
 
     fetchingCallback()

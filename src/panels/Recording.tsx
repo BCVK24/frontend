@@ -70,7 +70,7 @@ export const RecordingPanel: FC<RecordingPanelProps> = ({
   // Add regions
   useEffect(() => {
     wavesurfer?.on("decode", () => {
-      const sortedTags = currentRecording?.tags.sort((a, b) => a.start - b.start)
+      const sortedTags = currentRecording?.display_tags.sort((a, b) => a.start - b.start)
       for (const [id, tag] of (sortedTags || []).entries()) {
         if (tag.tag_type != "SOURCETAG") {
           wsRegions?.addRegion({
@@ -96,22 +96,22 @@ export const RecordingPanel: FC<RecordingPanelProps> = ({
     wsRegions?.on(
       "region-updated", 
       async (region) => {
-        if (currentRecording?.tags[+region.id]) {
+        if (currentRecording?.display_tags[+region.id]) {
           const new_tag: Tag = {
-            ...currentRecording.tags[+region.id],
+            ...currentRecording.display_tags[+region.id],
             start: region.start,
             end: region.end,
           };
 
-          const new_tags = currentRecording.tags;
+          const new_tags = currentRecording.display_tags;
           new_tags[+region.id] = new_tag;
 
-          setCurrentRecording({ ...currentRecording, tags: new_tags });
+          setCurrentRecording({ ...currentRecording, display_tags: new_tags });
 
-          //if (currentRecording?.tags[+region.id].id) {
+          //if (currentRecording?.display_tags[+region.id].id) {
           TagService.update(
             {
-              ...currentRecording?.tags[+region.id],
+              ...currentRecording?.display_tags[+region.id],
               start: region.start,
               end: region.end,
             },
@@ -125,7 +125,7 @@ export const RecordingPanel: FC<RecordingPanelProps> = ({
       (region: Region, e) => {
         e.preventDefault()
 
-        currentRecording && setCurrentTag(currentRecording.tags[+region.id]);
+        currentRecording && setCurrentTag(currentRecording.display_tags[+region.id]);
         setCurrentRegion(region)
 
         routeNavigator.showModal("abouttag");

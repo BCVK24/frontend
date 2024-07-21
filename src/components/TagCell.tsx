@@ -36,10 +36,10 @@ export const TagCell: FC<TagCellProps> = ({
   const deleteTag = async (key: number) => {
     await TagService.delete(tag.id);
 
-    const newTags = currentRecording.tags;
+    const newTags = currentRecording.display_tags;
     newTags.splice(key, 1);
 
-    setCurrentRecording({ ...currentRecording, tags: newTags });
+    setCurrentRecording({ ...currentRecording, display_tags: newTags });
     region && region.remove();
   };
 
