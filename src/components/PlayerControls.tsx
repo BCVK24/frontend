@@ -101,7 +101,7 @@ export const PlayerControls: FC<PlayerControlsProps> = ({
     result && setIsPollingResults(true);
   };
 
-  const createTag = async () => {
+  const createTag = async () => { // This works
     // Call API
     const tag =
       wavesurfer && currentRecording?.id
@@ -121,7 +121,7 @@ export const PlayerControls: FC<PlayerControlsProps> = ({
     // Add to regions
     tag &&
       wsRegionsRef.current?.addRegion({
-        id: (currentRecording?.display_tags.length - 1 || 0).toString(),
+        id: tag.id.toString(),
         start: tag.start,
         end: tag.end,
         content: tag.description,
@@ -129,7 +129,7 @@ export const PlayerControls: FC<PlayerControlsProps> = ({
       });
   };
 
-  const loadModelTags = async () => {
+  const loadModelTags = async () => { // FIXME This function doesnt
     await RecordingService.get_model_tags(currentRecording.id)
 
     const fetchedRecording = await RecordingService.get_info(currentRecording.id)
@@ -141,7 +141,7 @@ export const PlayerControls: FC<PlayerControlsProps> = ({
       }
     }
 
-    for (const [id, tag] of (fetchedRecording?.display_tags || []).entries()) {
+    for (const tag of (fetchedRecording?.display_tags || [])) {
       if (tag.tag_type == 'MODELTAG') {
         wsRegionsRef.current?.addRegion({
           id: tag.id.toString(),
@@ -158,7 +158,7 @@ export const PlayerControls: FC<PlayerControlsProps> = ({
     setCurrentRecording(fetchedRecording)
   }
 
-  const deleteModelTags = async () => {
+  const deleteModelTags = async () => { // FIXME This function doesnt work either
     await RecordingService.delete_model_tags(currentRecording.id)
 
     const fetchedRecording = await RecordingService.get_info(currentRecording.id)
@@ -169,10 +169,19 @@ export const PlayerControls: FC<PlayerControlsProps> = ({
         tag.remove();
       }
     }
-    
+
     console.log('FETCH', fetchedRecording)
     setCurrentRecording(fetchedRecording)
   }
+
+  /*
+   * #TODO
+   * Проблема в том что при FIXME теги перестают синхронизироваться с регионами,
+   * при этом удаление отдельных тегов или их добавление работают
+   * 
+   * Вообще можно и так оставить, но придется 
+   * обновлять страницу после добавления или удаления modal tags
+   */
 
   const openTagEditMenu = () => {
     setPopout(
