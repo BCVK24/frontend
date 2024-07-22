@@ -16,6 +16,7 @@ import RegionsPlugin, { Region } from "wavesurfer.js/dist/plugins/regions.js";
 import { Tag } from "../models/schemas";
 import { RecordingRel, UserRel } from "../models/relschemas";
 import { iconAccent, TagType2Color } from "../colors";
+import { getTag, upTag } from "../utils";
 
 interface RecordingPanelProps extends NavIdProps {
   currentRecording: RecordingRel | undefined;
@@ -71,10 +72,10 @@ export const RecordingPanel: FC<RecordingPanelProps> = ({
   useEffect(() => {
     wavesurfer?.on("decode", () => {
       const sortedTags = currentRecording?.display_tags.sort((a, b) => a.start - b.start)
-      for (const [id, tag] of (sortedTags || []).entries()) {
+      for (const tag of sortedTags || []) {
         if (tag.tag_type != "SOURCETAG") {
           wsRegions?.addRegion({
-            id: id.toString(),
+            id: tag.id.toString(),
             start: tag.start,
             end: tag.end,
             content: tag.description,
@@ -96,27 +97,22 @@ export const RecordingPanel: FC<RecordingPanelProps> = ({
     wsRegions?.on(
       "region-updated", 
       async (region) => {
-        if (currentRecording?.display_tags[+region.id]) {
+        console.log(region, currentRecording?.display_tags)
+        const chosenTag = getTag(+region.id, currentRecording?.display_tags);
+        if (currentRecording && chosenTag) {
           const new_tag: Tag = {
-            ...currentRecording.display_tags[+region.id],
+            ...chosenTag,
             start: region.start,
             end: region.end,
           };
 
-          const new_tags = currentRecording.display_tags;
-          new_tags[+region.id] = new_tag;
+          const new_tags = upTag(new_tag, currentRecording.display_tags);
+
+          console.log('NEW TAGS', new_tags)
 
           setCurrentRecording({ ...currentRecording, display_tags: new_tags });
 
-          //if (currentRecording?.display_tags[+region.id].id) {
-          TagService.update(
-            {
-              ...currentRecording?.display_tags[+region.id],
-              start: region.start,
-              end: region.end,
-            },
-          )
-          //}
+          await TagService.update(new_tag)
         }
       }
     );
@@ -125,7 +121,7 @@ export const RecordingPanel: FC<RecordingPanelProps> = ({
       (region: Region, e) => {
         e.preventDefault()
 
-        currentRecording && setCurrentTag(currentRecording.display_tags[+region.id]);
+        currentRecording && setCurrentTag(getTag(+region.id, currentRecording.display_tags));
         setCurrentRegion(region)
 
         routeNavigator.showModal("abouttag");

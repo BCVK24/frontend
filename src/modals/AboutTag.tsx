@@ -14,7 +14,7 @@ import { FC } from "react";
 import { RecordingRel } from "../models/relschemas";
 import { Tag } from "../models/schemas";
 import { ErrorMessage } from "../components";
-import { Normalize } from "../utils";
+import { getTag, Normalize, upTag } from "../utils";
 import { TagType2Text } from "../constants";
 import { TagService } from "../services";
 import { Region } from "wavesurfer.js/dist/plugins/regions.js";
@@ -61,10 +61,16 @@ export const AboutTag: FC<AboutTagProps> = ({
   const saveTag = async () => {
     await TagService.update(currentTag)
     currentRegion?.setOptions({content: currentTag.description})
-    const tags = currentRecording.display_tags
+    let tags = currentRecording.display_tags
 
-    if (currentRegion)
-      tags[+currentRegion.id].description = String(currentRegion?.content?.textContent) || ""
+    if (currentRegion) {
+      const changeTag = getTag(+currentRecording.id, tags)
+
+      if (changeTag) {
+        changeTag.description = String(currentRegion?.content?.textContent) || ""
+        tags = upTag(changeTag, tags)        
+      }
+    }
 
     router.hideModal()
   }

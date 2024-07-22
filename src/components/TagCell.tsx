@@ -3,7 +3,7 @@ import { IconButton, SimpleCell } from "@vkontakte/vkui";
 import { Icon24Delete, Icon24RobotOutline, Icon24User } from "@vkontakte/icons";
 import WaveSurfer from "wavesurfer.js";
 import { Region } from "wavesurfer.js/dist/plugins/regions.js";
-import { TagToNormalized } from "../utils";
+import { getTag, TagToNormalized } from "../utils";
 import { TagService } from "../services";
 import { RecordingRel } from "../models/relschemas";
 import { Tag } from "../models/schemas";
@@ -44,7 +44,7 @@ export const TagCell: FC<TagCellProps> = ({
   };
 
   // Choose icon
-  const icon = tag.tag_type == "MODELTAG" ?
+  const icon = getTag(tag.id, currentRecording.display_tags)?.tag_type == "MODELTAG" ?
     <Icon24RobotOutline /> :
     <Icon24User />;
 

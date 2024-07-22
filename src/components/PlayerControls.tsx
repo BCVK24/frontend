@@ -24,6 +24,7 @@ import { ResultService, TagService, RecordingService } from "../services";
 import { POLLING_INTERVAL } from "../env";
 import { NotifyBar, openResults } from ".";
 import { iconAccent, TagType2Color } from "../colors";
+import { getTag } from "../utils";
 
 interface PlayerControlsProps extends GroupProps {
   wavesurfer: WaveSurfer | null;
@@ -132,10 +133,9 @@ export const PlayerControls: FC<PlayerControlsProps> = ({
     await RecordingService.get_model_tags(currentRecording.id)
 
     const fetchedRecording = await RecordingService.get_info(currentRecording.id)
-    setCurrentRecording(fetchedRecording)
 
     for (const tag of wsRegionsRef.current?.getRegions() || []) {
-      if (currentRecording.display_tags[+tag.id].tag_type == 'MODELTAG') {
+      if (getTag(+tag.id, currentRecording.display_tags)?.tag_type == 'MODELTAG') { // ???
         //console.log(tag, currentRecording.display_tags[+tag.id])
         tag.remove();
       }
@@ -144,7 +144,7 @@ export const PlayerControls: FC<PlayerControlsProps> = ({
     for (const [id, tag] of (fetchedRecording?.display_tags || []).entries()) {
       if (tag.tag_type == 'MODELTAG') {
         wsRegionsRef.current?.addRegion({
-          id: id.toString(),
+          id: tag.id.toString(),
           start: tag.start,
           end: tag.end,
           content: tag.description,
@@ -152,20 +152,26 @@ export const PlayerControls: FC<PlayerControlsProps> = ({
         });
       }
     }
+    console.log(wsRegionsRef.current?.getRegions())
+
+    console.log('FETCH', fetchedRecording)
+    setCurrentRecording(fetchedRecording)
   }
 
   const deleteModelTags = async () => {
     await RecordingService.delete_model_tags(currentRecording.id)
 
     const fetchedRecording = await RecordingService.get_info(currentRecording.id)
-    setCurrentRecording(fetchedRecording)
 
     for (const tag of wsRegionsRef.current?.getRegions() || []) {
-      if (currentRecording.display_tags[+tag.id].tag_type == 'MODELTAG') {
+      if (getTag(+tag.id, currentRecording.display_tags)?.tag_type == 'MODELTAG') { // ???
         //console.log(tag, currentRecording.display_tags[+tag.id])
         tag.remove();
       }
     }
+    
+    console.log('FETCH', fetchedRecording)
+    setCurrentRecording(fetchedRecording)
   }
 
   const openTagEditMenu = () => {
