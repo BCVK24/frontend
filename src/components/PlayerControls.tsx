@@ -129,11 +129,15 @@ export const PlayerControls: FC<PlayerControlsProps> = ({
   };
 
   const loadModelTags = async () => {
-    const fetchedRecording = await RecordingService.get_model_tags(currentRecording.id)
+    await RecordingService.get_model_tags(currentRecording.id)
 
-    for (const region of wsRegionsRef.current?.getRegions() || []) {
-      if (currentRecording.display_tags[+region.id].tag_type == 'MODELTAG') {
-        region.remove()
+    const fetchedRecording = await RecordingService.get_info(currentRecording.id)
+    setCurrentRecording(fetchedRecording)
+
+    for (const tag of wsRegionsRef.current?.getRegions() || []) {
+      if (currentRecording.display_tags[+tag.id].tag_type == 'MODELTAG') {
+        //console.log(tag, currentRecording.display_tags[+tag.id])
+        tag.remove();
       }
     }
 
@@ -148,20 +152,20 @@ export const PlayerControls: FC<PlayerControlsProps> = ({
         });
       }
     }
-
-    setCurrentRecording(fetchedRecording)
   }
 
   const deleteModelTags = async () => {
-    const fetchedRecording = await RecordingService.delete_model_tags(currentRecording.id)
+    await RecordingService.delete_model_tags(currentRecording.id)
 
-    for (const region of wsRegionsRef.current?.getRegions() || []) {
-      if (currentRecording.display_tags[+region.id].tag_type == 'MODELTAG') {
-        region.remove()
+    const fetchedRecording = await RecordingService.get_info(currentRecording.id)
+    setCurrentRecording(fetchedRecording)
+
+    for (const tag of wsRegionsRef.current?.getRegions() || []) {
+      if (currentRecording.display_tags[+tag.id].tag_type == 'MODELTAG') {
+        //console.log(tag, currentRecording.display_tags[+tag.id])
+        tag.remove();
       }
     }
-
-    setCurrentRecording(fetchedRecording)
   }
 
   const openTagEditMenu = () => {
