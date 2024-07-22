@@ -181,6 +181,9 @@ export const PlayerControls: FC<PlayerControlsProps> = ({
    * 
    * Вообще можно и так оставить, но придется 
    * обновлять страницу после добавления или удаления modal tags
+   * 
+   * Т.е. проблема в том месте что после FIXME
+   * ../panels/Recording.tsx:100 при выводе не добавляются теги
    */
 
   const openTagEditMenu = () => {
