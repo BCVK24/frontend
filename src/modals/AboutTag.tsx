@@ -20,7 +20,7 @@ import { TagService } from "../services";
 import { Region } from "wavesurfer.js/dist/plugins/regions.js";
 
 interface AboutTagProps extends NavIdProps {
-  currentRecording: RecordingRel | undefined;
+  currentRecordingRef: React.MutableRefObject<RecordingRel | undefined>;
   currentTag: Tag | undefined;
   currentRegion: Region | undefined;
   setCurrentTag: React.Dispatch<React.SetStateAction<Tag | undefined>>;
@@ -31,7 +31,7 @@ interface AboutTagProps extends NavIdProps {
  */
 export const AboutTag: FC<AboutTagProps> = ({
   id,
-  currentRecording,
+  currentRecordingRef,
   currentTag,
   currentRegion,
   setCurrentTag,
@@ -40,7 +40,7 @@ export const AboutTag: FC<AboutTagProps> = ({
   const router = useRouteNavigator();
 
   // Bad case
-  if (!(currentRecording && currentTag)) {
+  if (!(currentRecordingRef.current && currentTag)) {
     return (
       <ModalPage id={id} onClose={() => router.hideModal()}>
         <ErrorMessage
@@ -61,10 +61,10 @@ export const AboutTag: FC<AboutTagProps> = ({
   const saveTag = async () => {
     await TagService.update(currentTag)
     currentRegion?.setOptions({content: currentTag.description})
-    let tags = currentRecording.display_tags
+    let tags = currentRecordingRef.current?.display_tags
 
-    if (currentRegion) {
-      const changeTag = getTag(+currentRecording.id, tags)
+    if (tags && currentRecordingRef.current && currentRegion) {
+      const changeTag = getTag(+currentRecordingRef.current?.id, tags)
 
       if (changeTag) {
         changeTag.description = String(currentRegion?.content?.textContent) || ""

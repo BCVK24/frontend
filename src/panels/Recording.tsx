@@ -14,16 +14,13 @@ import { ErrorMessage, useCustomWave, PlayerControls, TagsList } from "../compon
 import { Icon16CheckCircle } from "@vkontakte/icons";
 import RegionsPlugin, { Region } from "wavesurfer.js/dist/plugins/regions.js";
 import { Tag } from "../models/schemas";
-import { RecordingRel, UserRel } from "../models/relschemas";
+import { RecordingRel } from "../models/relschemas";
 import { iconAccent, TagType2Color } from "../colors";
 import { getTag, upTag } from "../utils";
 
 interface RecordingPanelProps extends NavIdProps {
-  currentRecording: RecordingRel | undefined;
-  currentUser: UserRel | undefined;
+  currentRecordingRef: React.MutableRefObject<RecordingRel | undefined>;
 
-  setCurrentRecording: React.Dispatch<React.SetStateAction<RecordingRel | undefined>>;
-  setCurrentUser: React.Dispatch<React.SetStateAction<UserRel | undefined>>;
   setCurrentTag: React.Dispatch<React.SetStateAction<Tag | undefined>>;
   setCurrentRegion: React.Dispatch<React.SetStateAction<Region | undefined>>;
 
@@ -35,8 +32,7 @@ interface RecordingPanelProps extends NavIdProps {
  */
 export const RecordingPanel: FC<RecordingPanelProps> = ({
   id,
-  currentRecording,
-  setCurrentRecording,
+  currentRecordingRef,
   setCurrentTag,
   setCurrentRegion,
   setPopout,
@@ -58,20 +54,21 @@ export const RecordingPanel: FC<RecordingPanelProps> = ({
       const recording = recordingId
         ? await RecordingService.get_info(+recordingId)
         : undefined;
-      setCurrentRecording(recording);
+
+      currentRecordingRef.current = recording;
     }
     fetchData();
   }, [recordingId]);
 
   // Init wavesurfer
-  const { wavesurfer } = useCustomWave(wavesurferRef, currentRecording);
+  const { wavesurfer } = useCustomWave(wavesurferRef, currentRecordingRef.current);
   const wsRegions = wavesurfer?.registerPlugin(RegionsPlugin.create());
   const wsRegionsRef = useRef<RegionsPlugin | undefined>(wsRegions);
 
   // Add regions
   useEffect(() => {
     wavesurfer?.on("decode", () => {
-      const sortedTags = currentRecording?.display_tags.sort((a, b) => a.start - b.start)
+      const sortedTags = currentRecordingRef.current?.display_tags.sort((a, b) => a.start - b.start)
       for (const tag of sortedTags || []) {
         if (tag.tag_type != "SOURCETAG") {
           wsRegions?.addRegion({
@@ -97,20 +94,20 @@ export const RecordingPanel: FC<RecordingPanelProps> = ({
     wsRegions?.on(
       "region-updated", 
       async (region) => {
-        console.log(region, currentRecording?.display_tags)
-        const chosenTag = getTag(+region.id, currentRecording?.display_tags);
-        if (currentRecording && chosenTag) {
+        console.log(region, currentRecordingRef.current?.display_tags)
+        const chosenTag = getTag(+region.id, currentRecordingRef.current?.display_tags);
+        if (currentRecordingRef.current && chosenTag) {
           const new_tag: Tag = {
             ...chosenTag,
             start: region.start,
             end: region.end,
           };
 
-          const new_tags = upTag(new_tag, currentRecording.display_tags);
+          const new_tags = upTag(new_tag, currentRecordingRef.current.display_tags);
 
           console.log('NEW TAGS', new_tags)
 
-          setCurrentRecording({ ...currentRecording, display_tags: new_tags });
+          currentRecordingRef.current = { ...currentRecordingRef.current, display_tags: new_tags };
 
           await TagService.update(new_tag)
         }
@@ -121,15 +118,14 @@ export const RecordingPanel: FC<RecordingPanelProps> = ({
       (region: Region, e) => {
         e.preventDefault()
 
-        currentRecording && setCurrentTag(getTag(+region.id, currentRecording.display_tags));
-        setCurrentRegion(region)
+        currentRecordingRef.current && setCurrentTag(getTag(+region.id, currentRecordingRef.current.display_tags));
 
         routeNavigator.showModal("abouttag");
       }
     );
   }, [wsRegions]);
 
-  return !currentRecording ? (
+  return !currentRecordingRef ? (
     <Panel id={id}>
       <ErrorMessage
         header="Вы не имеете доступа к этой записе"
@@ -142,8 +138,10 @@ export const RecordingPanel: FC<RecordingPanelProps> = ({
         before={<PanelHeaderBack onClick={() => routeNavigator.push("/")} />}
       >
         <Input
-          value={currentRecording.title}
-          onChange={(e) => setCurrentRecording({...currentRecording, title: e.target.value})}
+          value={currentRecordingRef.current?.title}
+          onChange={(e) => {
+            currentRecordingRef.current = {...currentRecordingRef.current, title: e.target.value};
+          }}
           after={
             <IconButton
               onClick={async () => await RecordingService.update(currentRecording)}
@@ -160,6 +158,7 @@ export const RecordingPanel: FC<RecordingPanelProps> = ({
         wavesurfer={wavesurfer}
         wsRegionsRef={wsRegionsRef}
         currentRecording={currentRecording}
+        currentRecordingRef={currentRecordingRef}
         setCurrentRecording={setCurrentRecording}
         setPopout={setPopout}
       />
@@ -168,6 +167,7 @@ export const RecordingPanel: FC<RecordingPanelProps> = ({
         wavesurfer={wavesurfer}
         wsRegionsRef={wsRegionsRef}
         currentRecording={currentRecording}
+        currentRecordingRef={currentRecordingRef}
         setCurrentRecording={setCurrentRecording}
       />
     </Panel>

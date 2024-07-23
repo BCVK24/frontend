@@ -30,6 +30,7 @@ interface PlayerControlsProps extends GroupProps {
   wavesurfer: WaveSurfer | null;
   wsRegionsRef: React.MutableRefObject<RegionsPlugin | undefined | null>;
   currentRecording: RecordingRel;
+  currentRecordingRef: React.MutableRefObject<RecordingRel | undefined>;
   setCurrentRecording: React.Dispatch<
     React.SetStateAction<RecordingRel | undefined>
   >;
@@ -45,6 +46,7 @@ export const PlayerControls: FC<PlayerControlsProps> = ({
   wavesurfer,
   wsRegionsRef,
   currentRecording,
+  currentRecordingRef,
   setCurrentRecording,
   setPopout,
 }) => {
@@ -118,7 +120,7 @@ export const PlayerControls: FC<PlayerControlsProps> = ({
     tag == undefined || newTags?.push(tag);
     setCurrentRecording({ ...currentRecording, display_tags: newTags });
 
-    // Add to regions
+    // Add to regions 
     tag &&
       wsRegionsRef.current?.addRegion({
         id: tag.id.toString(),
@@ -134,10 +136,10 @@ export const PlayerControls: FC<PlayerControlsProps> = ({
 
     const fetchedRecording = await RecordingService.get_info(currentRecording.id)
 
-    for (const tag of wsRegionsRef.current?.getRegions() || []) {
-      if (getTag(+tag.id, currentRecording.display_tags)?.tag_type == 'MODELTAG') { // ???
+    for (const region of wsRegionsRef.current?.getRegions() || []) {
+      if (getTag(+region.id, currentRecording.display_tags)?.tag_type == 'MODELTAG') { // ???
         //console.log(tag, currentRecording.display_tags[+tag.id])
-        tag.remove();
+        region.remove();
       }
     }
 

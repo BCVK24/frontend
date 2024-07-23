@@ -3,14 +3,12 @@ import { DropZone, ModalPage, NavIdProps, Placeholder, File, Div } from "@vkonta
 import { Icon56MusicOutline } from "@vkontakte/icons";
 import { useRouteNavigator } from "@vkontakte/vk-mini-apps-router";
 import { RecordingService } from "../services";
-import { RecordingRel, UserRel } from "../models/relschemas";
+import { UserRel } from "../models/relschemas";
 import { ErrorBar } from "../components";
 import { iconAccent } from "../colors";
 
 interface DNDProps extends NavIdProps {
-  setCurrentRecording: React.Dispatch<React.SetStateAction<RecordingRel | undefined>>;
   currentUser: UserRel | undefined;
-  setCurrentUser: React.Dispatch<React.SetStateAction<UserRel | undefined>>;
   setFetchRecordings: React.Dispatch<React.SetStateAction<boolean>>;
 }
 

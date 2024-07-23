@@ -10,6 +10,7 @@ interface TagsListProps {
   wavesurfer: WaveSurfer | null;
   wsRegionsRef: React.MutableRefObject<RegionPlugin | undefined>;
   currentRecording: RecordingRel;
+  currentRecordingRef: React.MutableRefObject<RecordingRel | undefined>;
   setCurrentRecording: React.Dispatch<React.SetStateAction<RecordingRel | undefined>>;
 }
 
@@ -17,6 +18,7 @@ export const TagsList: FC<TagsListProps> = ({
   wavesurfer,
   wsRegionsRef,
   currentRecording,
+  currentRecordingRef,
   setCurrentRecording,
 }) => {
   return  (

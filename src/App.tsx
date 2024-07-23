@@ -22,6 +22,7 @@ export const App = () => {
   const [currentRegion, setCurrentRegion] = useState<Region | undefined>();
   const [currentUser, setCurrentUser] = useState<UserRel | undefined>();
   const [fetchRecordings, setFetchRecordings] = useState<boolean>(false);
+  const currentRecordingRef = useRef(currentRecording);
   const timerIdRef = useRef<number | undefined>(undefined);
   const clearPopout = () => setPopout(null);
 
@@ -88,14 +89,12 @@ export const App = () => {
     >
       <DND 
         id="dnd"
-        setCurrentRecording={setCurrentRecording}
         currentUser={currentUser} 
-        setCurrentUser={setCurrentUser} 
         setFetchRecordings={setFetchRecordings} 
       />
       <AboutTag
         id="abouttag"
-        currentRecording={currentRecording}
+        currentRecordingRef={currentRecordingRef}
         currentTag={currentTag}
         currentRegion={currentRegion}
         setCurrentTag={setCurrentTag}
@@ -111,11 +110,8 @@ export const App = () => {
           <RecordingPanel
             id="recording"
             setPopout={setPopout}
-            currentRecording={currentRecording}
-            setCurrentRecording={setCurrentRecording}
+            currentRecordingRef={currentRecordingRef}
             setCurrentTag={setCurrentTag}
-            currentUser={currentUser}
-            setCurrentUser={setCurrentUser}
             setCurrentRegion={setCurrentRegion}
           />
         </View>
