@@ -13,8 +13,7 @@ interface TagCellProps {
   tag: Tag;
   region: Region;
   wavesurfer: WaveSurfer | null;
-  currentRecording: RecordingRel;
-  setCurrentRecording: React.Dispatch<React.SetStateAction<RecordingRel | undefined>>;
+  currentRecordingRef: React.MutableRefObject<RecordingRel | undefined>;
 }
 
 /**
@@ -25,8 +24,7 @@ export const TagCell: FC<TagCellProps> = ({
   tag,
   region,
   wavesurfer,
-  currentRecording,
-  setCurrentRecording,
+  currentRecordingRef,
 }) => {
   // Define behavior for actions
   const navigateTo = (where: number) => {
@@ -34,17 +32,20 @@ export const TagCell: FC<TagCellProps> = ({
   };
 
   const deleteTag = async (key: number) => {
+    if (!currentRecordingRef.current) return;
+
     await TagService.delete(tag.id);
+    const newTags = currentRecordingRef.current?.display_tags;
 
-    const newTags = currentRecording.display_tags;
+    if (!newTags) return;
+
     newTags.splice(key, 1);
-
-    setCurrentRecording({ ...currentRecording, display_tags: newTags });
+    currentRecordingRef.current = { ...currentRecordingRef.current, display_tags: newTags };
     region && region.remove();
   };
 
   // Choose icon
-  const icon = getTag(tag.id, currentRecording.display_tags)?.tag_type == "MODELTAG" ?
+  const icon = getTag(tag.id, currentRecordingRef.current?.display_tags)?.tag_type == "MODELTAG" ?
     <Icon24RobotOutline /> :
     <Icon24User />;
 

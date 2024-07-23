@@ -140,11 +140,12 @@ export const RecordingPanel: FC<RecordingPanelProps> = ({
         <Input
           value={currentRecordingRef.current?.title}
           onChange={(e) => {
-            currentRecordingRef.current = {...currentRecordingRef.current, title: e.target.value};
+            if (currentRecordingRef.current)
+              currentRecordingRef.current = {...currentRecordingRef.current, title: e.target.value};
           }}
           after={
             <IconButton
-              onClick={async () => await RecordingService.update(currentRecording)}
+              onClick={async () => await RecordingService.update(currentRecordingRef.current)}
             >
               <Icon16CheckCircle fill={iconAccent} />
             </IconButton>
@@ -157,18 +158,14 @@ export const RecordingPanel: FC<RecordingPanelProps> = ({
       <PlayerControls
         wavesurfer={wavesurfer}
         wsRegionsRef={wsRegionsRef}
-        currentRecording={currentRecording}
         currentRecordingRef={currentRecordingRef}
-        setCurrentRecording={setCurrentRecording}
         setPopout={setPopout}
       />
 
       <TagsList
         wavesurfer={wavesurfer}
         wsRegionsRef={wsRegionsRef}
-        currentRecording={currentRecording}
         currentRecordingRef={currentRecordingRef}
-        setCurrentRecording={setCurrentRecording}
       />
     </Panel>
   );

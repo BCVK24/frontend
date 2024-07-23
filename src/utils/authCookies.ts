@@ -1,10 +1,11 @@
 // import Cookies from "js-cookie";
 
 export const GetAuthConfig = (contentType: string = "application/json") => {
-  console.log(GetCookies());
+  console.log(`VK ${btoa(window.location.search)}`)
+
   return {
     headers: {
-      Authorization: GetCookies(),
+      Authorization: `VK ${btoa(window.location.search)}`,
       "Content-Type": contentType,
     },
   };

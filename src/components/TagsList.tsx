@@ -9,25 +9,21 @@ import { TagCell } from ".";
 interface TagsListProps {
   wavesurfer: WaveSurfer | null;
   wsRegionsRef: React.MutableRefObject<RegionPlugin | undefined>;
-  currentRecording: RecordingRel;
   currentRecordingRef: React.MutableRefObject<RecordingRel | undefined>;
-  setCurrentRecording: React.Dispatch<React.SetStateAction<RecordingRel | undefined>>;
 }
 
 export const TagsList: FC<TagsListProps> = ({
   wavesurfer,
   wsRegionsRef,
-  currentRecording,
   currentRecordingRef,
-  setCurrentRecording,
 }) => {
   return  (
     <Group header={
       <Header mode="secondary">
-        {currentRecording.display_tags.length ? "Проблемные участки" : "Проблемных участков нет!"}
+        {currentRecordingRef.current?.display_tags.length ? "Проблемные участки" : "Проблемных участков нет!"}
       </Header>
     }>
-      {currentRecording.display_tags.map((tag: Tag, index: number) =>
+      {currentRecordingRef.current?.display_tags.map((tag: Tag, index: number) =>
         wsRegionsRef.current?.getRegions()[index] ? (
           <TagCell
             key={index}
@@ -35,8 +31,7 @@ export const TagsList: FC<TagsListProps> = ({
             tag={tag}
             region={wsRegionsRef.current?.getRegions()[index]}
             wavesurfer={wavesurfer}
-            currentRecording={currentRecording}
-            setCurrentRecording={setCurrentRecording}
+            currentRecordingRef={currentRecordingRef}
           />
         ) : undefined,
       )}

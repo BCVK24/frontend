@@ -11,7 +11,7 @@ import { SERVER_URL } from "../env";
  * @description Opens popout with all results
  */
 export const openResults = (
-  results: Array<Result>,
+  results: Array<Result> | undefined,
   setPopout: React.Dispatch<React.SetStateAction<React.JSX.Element | null | undefined>>,
   resultsTargetRef: React.MutableRefObject<null>,
 ) => setPopout(
@@ -20,7 +20,7 @@ export const openResults = (
     toggleRef={resultsTargetRef}
     placement="top-end"
   >
-    {results.map((res) => (
+    {results?.map((res) => (
       <a style={{textDecoration: 'none'}} href={`${SERVER_URL}/${res.url}`}>
         <ActionSheetItem
           before={

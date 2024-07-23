@@ -29,11 +29,7 @@ import { getTag } from "../utils";
 interface PlayerControlsProps extends GroupProps {
   wavesurfer: WaveSurfer | null;
   wsRegionsRef: React.MutableRefObject<RegionsPlugin | undefined | null>;
-  currentRecording: RecordingRel;
   currentRecordingRef: React.MutableRefObject<RecordingRel | undefined>;
-  setCurrentRecording: React.Dispatch<
-    React.SetStateAction<RecordingRel | undefined>
-  >;
   setPopout: React.Dispatch<
     React.SetStateAction<React.JSX.Element | null | undefined>
   >;
@@ -45,9 +41,7 @@ interface PlayerControlsProps extends GroupProps {
 export const PlayerControls: FC<PlayerControlsProps> = ({
   wavesurfer,
   wsRegionsRef,
-  currentRecording,
   currentRecordingRef,
-  setCurrentRecording,
   setPopout,
 }) => {
   // Variables
@@ -60,13 +54,13 @@ export const PlayerControls: FC<PlayerControlsProps> = ({
   // Polling for results
   useEffect(() => {
     const pollingCallback = async () => {
-      if (!isPollingResults) return;
+      if (!isPollingResults || !currentRecordingRef.current) return;
 
-      const recording = await RecordingService.get_info(currentRecording.id);
+      const recording = await RecordingService.get_info(currentRecordingRef.current.id);
 
       if (!recording) return;
 
-      setCurrentRecording(recording);
+      currentRecordingRef.current = recording;
 
       if (!recording.results.some((res) => res.processing)) {
         setIsPollingResults(false);
@@ -96,9 +90,9 @@ export const PlayerControls: FC<PlayerControlsProps> = ({
   };
 
   const createResult = async () => {
-    if (!currentRecording) return;
+    if (!currentRecordingRef.current) return;
 
-    const result = await ResultService.create(currentRecording?.id);
+    const result = await ResultService.create(currentRecordingRef.current?.id);
 
     result && setIsPollingResults(true);
   };
@@ -106,19 +100,21 @@ export const PlayerControls: FC<PlayerControlsProps> = ({
   const createTag = async () => { // This works
     // Call API
     const tag =
-      wavesurfer && currentRecording?.id
+      wavesurfer && currentRecordingRef.current?.id
         ? await TagService.create(
             wavesurfer.getCurrentTime(),
             wavesurfer.getCurrentTime() + 10,
-            currentRecording?.id,
+            currentRecordingRef.current?.id,
             `Отрезок ${(wsRegionsRef.current?.getRegions().length || 0) + 1}`
           )
         : undefined;
 
     // Update localy
-    const newTags = currentRecording?.display_tags;
+    const newTags = currentRecordingRef.current?.display_tags;
     tag == undefined || newTags?.push(tag);
-    setCurrentRecording({ ...currentRecording, display_tags: newTags });
+
+    if (newTags && currentRecordingRef.current)
+      currentRecordingRef.current = { ...currentRecordingRef.current, display_tags: newTags };
 
     // Add to regions 
     tag &&
@@ -132,12 +128,14 @@ export const PlayerControls: FC<PlayerControlsProps> = ({
   };
 
   const loadModelTags = async () => { // FIXME This function doesnt
-    await RecordingService.get_model_tags(currentRecording.id)
+    if (!currentRecordingRef.current) return;
 
-    const fetchedRecording = await RecordingService.get_info(currentRecording.id)
+    await RecordingService.get_model_tags(currentRecordingRef.current.id)
+
+    const fetchedRecording = await RecordingService.get_info(currentRecordingRef.current.id)
 
     for (const region of wsRegionsRef.current?.getRegions() || []) {
-      if (getTag(+region.id, currentRecording.display_tags)?.tag_type == 'MODELTAG') { // ???
+      if (getTag(+region.id, currentRecordingRef.current.display_tags)?.tag_type == 'MODELTAG') { // ???
         //console.log(tag, currentRecording.display_tags[+tag.id])
         region.remove();
       }
@@ -157,23 +155,24 @@ export const PlayerControls: FC<PlayerControlsProps> = ({
     console.log(wsRegionsRef.current?.getRegions())
 
     console.log('FETCH', fetchedRecording)
-    setCurrentRecording(fetchedRecording)
+    currentRecordingRef.current = fetchedRecording;
   }
 
   const deleteModelTags = async () => { // FIXME This function doesnt work either
-    await RecordingService.delete_model_tags(currentRecording.id)
+    if (!currentRecordingRef.current) return;
 
-    const fetchedRecording = await RecordingService.get_info(currentRecording.id)
+    await RecordingService.delete_model_tags(currentRecordingRef.current.id)
+
+    const fetchedRecording = await RecordingService.get_info(currentRecordingRef.current.id)
 
     for (const tag of wsRegionsRef.current?.getRegions() || []) {
-      if (getTag(+tag.id, currentRecording.display_tags)?.tag_type == 'MODELTAG') { // ???
+      if (getTag(+tag.id, currentRecordingRef.current.display_tags)?.tag_type == 'MODELTAG') { // ???
         //console.log(tag, currentRecording.display_tags[+tag.id])
         tag.remove();
       }
     }
 
-    console.log('FETCH', fetchedRecording)
-    setCurrentRecording(fetchedRecording)
+    currentRecordingRef.current = fetchedRecording
   }
 
   /*
@@ -229,10 +228,10 @@ export const PlayerControls: FC<PlayerControlsProps> = ({
 
             <IconButton
               onClick={() => {
-                openResults(currentRecording.results, setPopout, resultsRef);
+                openResults(currentRecordingRef.current?.results, setPopout, resultsRef);
               }}
               getRootRef={resultsRef}
-              disabled={!currentRecording.results.length}
+              disabled={!currentRecordingRef.current?.results.length}
             >
               <Icon28DownloadOutline color={iconAccent} />
             </IconButton>
